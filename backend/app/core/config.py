@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     CORS_ORIGINS: list = [
         "http://localhost:5173",  # Vite dev server
         "http://localhost:3000",
-        "https://echon.app",      # Production
+        "https://echon.vercel.app",      # Production
     ]
     
     # File Storage (S3 / Cloudflare R2)
