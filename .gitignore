@@ -51,9 +51,11 @@ Thumbs.db
 postgres_data/
 redis_data/
 
-# Logs
+# Logs & sensitive files
 *.log
 logs/
+echon_access_data.txt
+echon_db_backup.sql
 
 # Uploads (local development)
 uploads/

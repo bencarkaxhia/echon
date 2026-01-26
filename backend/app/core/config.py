@@ -21,16 +21,20 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # Database
-    DATABASE_URL: str = "postgresql://echon:echon_dev_password@localhost:5432/echon_db"
+    # DATABASE_URL: str = "postgresql://echon:echon_dev_password@localhost:5432/echon_db"     # local postgres deployment
+    DATABASE_URL: str = "postgresql://postgres:LPdllWRHtuEWJgHvrDUKYABYXDlfuaBc@centerbeam.proxy.rlwy.net:35430/railway"      # Railway Postgres Deployment
     
     # Redis
-    REDIS_URL: str = "redis://localhost:6379/0"
+    # REDIS_URL: str = "redis://localhost:6379/0"     # local redis deployment
+    REDIS_URL: str = "redis://default:qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE@redis.railway.internal:6379"       # Railway Redis Deployment
+    # REDIS_PASSWORD: Optional[str] = "qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE"                                    # Railway Redis Password
     
     # CORS (Frontend URLs)
     CORS_ORIGINS: list = [
-        "http://localhost:5173",  # Vite dev server
+        "http://localhost:5173",            # Vite local dev server
         "http://localhost:3000",
-        "https://echon.vercel.app",      # Production
+        "https://echon.vercel.app",         # Vercel Production Testing
+        "https://echon.app",                # Production
     ]
     
     # File Storage (S3 / Cloudflare R2)
