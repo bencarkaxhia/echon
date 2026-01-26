@@ -1,0 +1,96 @@
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-echon-black text-echon-cream font-serif;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+@layer components {
+  /* Echon Button - Warm and inviting */
+  .echon-btn {
+    @apply px-6 py-3 rounded-lg font-sans font-medium transition-all duration-300;
+    @apply bg-echon-candle text-echon-black;
+    @apply hover:bg-echon-gold hover:shadow-lg hover:shadow-echon-candle/50;
+  }
+
+  .echon-btn-secondary {
+    @apply px-6 py-3 rounded-lg font-sans font-medium transition-all duration-300;
+    @apply bg-echon-shadow text-echon-cream border border-echon-wood;
+    @apply hover:bg-echon-wood hover:border-echon-candle;
+  }
+
+  /* Echon Input - Elegant form fields */
+  .echon-input {
+    @apply w-full px-4 py-3 rounded-lg font-sans;
+    @apply bg-echon-shadow text-echon-cream border border-echon-wood;
+    @apply focus:outline-none focus:border-echon-candle focus:ring-1 focus:ring-echon-candle;
+    @apply placeholder-echon-cream-dark/50;
+  }
+
+  /* Echon Card - Content containers */
+  .echon-card {
+    @apply bg-echon-shadow rounded-xl p-6 border border-echon-wood;
+    @apply shadow-lg shadow-echon-black/50;
+  }
+
+  /* Candlelight glow effect */
+  .candlelight {
+    filter: drop-shadow(0 0 20px rgba(244, 164, 96, 0.6));
+  }
+
+  /* Root light effect */
+  .rootlight {
+    filter: drop-shadow(0 0 30px rgba(255, 215, 0, 0.5));
+  }
+}
+
+@layer utilities {
+  /* Text shadows for glowing text */
+  .text-glow {
+    text-shadow: 0 0 10px rgba(244, 164, 96, 0.5);
+  }
+
+  .text-glow-strong {
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+  }
+
+  /* Smooth fade transitions */
+  .fade-enter {
+    opacity: 0;
+    transition: opacity 1s ease-in;
+  }
+
+  .fade-enter-active {
+    opacity: 1;
+  }
+}
+
+/* Custom scrollbar (optional) */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1A1A1A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #3E2723;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #F4A460;
+}

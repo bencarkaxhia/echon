@@ -1,0 +1,444 @@
+beni@T14-BC:~/XF/Echon$ cd backend/
+beni@T14-BC:~/XF/Echon/backend$ source venv/bin/activate
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ pip install fastapi uvicorn sqlalchemy psycopg2-binary alembic python-jose passlib bcrypt python-multipart boto3 twilio redis
+Collecting fastapi
+  Using cached fastapi-0.128.0-py3-none-any.whl.metadata (30 kB)
+Collecting uvicorn
+  Using cached uvicorn-0.40.0-py3-none-any.whl.metadata (6.7 kB)
+Collecting sqlalchemy
+  Downloading sqlalchemy-2.0.46-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (9.5 kB)
+Collecting psycopg2-binary
+  Using cached psycopg2_binary-2.9.11-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl.metadata (4.9 kB)
+Collecting alembic
+  Downloading alembic-1.18.1-py3-none-any.whl.metadata (7.2 kB)
+Collecting python-jose
+  Using cached python_jose-3.5.0-py2.py3-none-any.whl.metadata (5.5 kB)
+Collecting passlib
+  Using cached passlib-1.7.4-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting bcrypt
+  Using cached bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl.metadata (10 kB)
+Collecting python-multipart
+  Downloading python_multipart-0.0.22-py3-none-any.whl.metadata (1.8 kB)
+Collecting boto3
+  Downloading boto3-1.42.34-py3-none-any.whl.metadata (6.8 kB)
+Collecting twilio
+  Downloading twilio-9.10.0-py2.py3-none-any.whl.metadata (13 kB)
+Collecting redis
+  Using cached redis-7.1.0-py3-none-any.whl.metadata (12 kB)
+Collecting starlette<0.51.0,>=0.40.0 (from fastapi)
+  Using cached starlette-0.50.0-py3-none-any.whl.metadata (6.3 kB)
+Collecting pydantic>=2.7.0 (from fastapi)
+  Using cached pydantic-2.12.5-py3-none-any.whl.metadata (90 kB)
+Collecting typing-extensions>=4.8.0 (from fastapi)
+  Using cached typing_extensions-4.15.0-py3-none-any.whl.metadata (3.3 kB)
+Collecting annotated-doc>=0.0.2 (from fastapi)
+  Using cached annotated_doc-0.0.4-py3-none-any.whl.metadata (6.6 kB)
+Collecting click>=7.0 (from uvicorn)
+  Using cached click-8.3.1-py3-none-any.whl.metadata (2.6 kB)
+Collecting h11>=0.8 (from uvicorn)
+  Using cached h11-0.16.0-py3-none-any.whl.metadata (8.3 kB)
+Collecting greenlet>=1 (from sqlalchemy)
+  Downloading greenlet-3.3.1-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl.metadata (3.7 kB)
+Collecting Mako (from alembic)
+  Using cached mako-1.3.10-py3-none-any.whl.metadata (2.9 kB)
+Collecting ecdsa!=0.15 (from python-jose)
+  Using cached ecdsa-0.19.1-py2.py3-none-any.whl.metadata (29 kB)
+Collecting rsa!=4.1.1,!=4.4,<5.0,>=4.0 (from python-jose)
+  Using cached rsa-4.9.1-py3-none-any.whl.metadata (5.6 kB)
+Collecting pyasn1>=0.5.0 (from python-jose)
+  Downloading pyasn1-0.6.2-py3-none-any.whl.metadata (8.4 kB)
+Collecting botocore<1.43.0,>=1.42.34 (from boto3)
+  Downloading botocore-1.42.34-py3-none-any.whl.metadata (5.9 kB)
+Collecting jmespath<2.0.0,>=0.7.1 (from boto3)
+  Downloading jmespath-1.1.0-py3-none-any.whl.metadata (7.6 kB)
+Collecting s3transfer<0.17.0,>=0.16.0 (from boto3)
+  Downloading s3transfer-0.16.0-py3-none-any.whl.metadata (1.7 kB)
+Collecting requests>=2.0.0 (from twilio)
+  Using cached requests-2.32.5-py3-none-any.whl.metadata (4.9 kB)
+Collecting PyJWT<3.0.0,>=2.0.0 (from twilio)
+  Using cached PyJWT-2.10.1-py3-none-any.whl.metadata (4.0 kB)
+Collecting aiohttp>=3.8.4 (from twilio)
+  Using cached aiohttp-3.13.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (8.1 kB)
+Collecting aiohttp-retry>=2.8.3 (from twilio)
+  Using cached aiohttp_retry-2.9.1-py3-none-any.whl.metadata (8.8 kB)
+Collecting aiohappyeyeballs>=2.5.0 (from aiohttp>=3.8.4->twilio)
+  Using cached aiohappyeyeballs-2.6.1-py3-none-any.whl.metadata (5.9 kB)
+Collecting aiosignal>=1.4.0 (from aiohttp>=3.8.4->twilio)
+  Using cached aiosignal-1.4.0-py3-none-any.whl.metadata (3.7 kB)
+Collecting attrs>=17.3.0 (from aiohttp>=3.8.4->twilio)
+  Using cached attrs-25.4.0-py3-none-any.whl.metadata (10 kB)
+Collecting frozenlist>=1.1.1 (from aiohttp>=3.8.4->twilio)
+  Using cached frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl.metadata (20 kB)
+Collecting multidict<7.0,>=4.5 (from aiohttp>=3.8.4->twilio)
+  Using cached multidict-6.7.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (5.3 kB)
+Collecting propcache>=0.2.0 (from aiohttp>=3.8.4->twilio)
+  Using cached propcache-0.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (13 kB)
+Collecting yarl<2.0,>=1.17.0 (from aiohttp>=3.8.4->twilio)
+  Using cached yarl-1.22.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (75 kB)
+Collecting python-dateutil<3.0.0,>=2.1 (from botocore<1.43.0,>=1.42.34->boto3)
+  Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl.metadata (8.4 kB)
+Collecting urllib3!=2.2.0,<3,>=1.25.4 (from botocore<1.43.0,>=1.42.34->boto3)
+  Using cached urllib3-2.6.3-py3-none-any.whl.metadata (6.9 kB)
+Collecting six>=1.9.0 (from ecdsa!=0.15->python-jose)
+  Using cached six-1.17.0-py2.py3-none-any.whl.metadata (1.7 kB)
+Collecting annotated-types>=0.6.0 (from pydantic>=2.7.0->fastapi)
+  Using cached annotated_types-0.7.0-py3-none-any.whl.metadata (15 kB)
+Collecting pydantic-core==2.41.5 (from pydantic>=2.7.0->fastapi)
+  Using cached pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl.metadata (7.3 kB)
+Collecting typing-inspection>=0.4.2 (from pydantic>=2.7.0->fastapi)
+  Using cached typing_inspection-0.4.2-py3-none-any.whl.metadata (2.6 kB)
+Collecting charset_normalizer<4,>=2 (from requests>=2.0.0->twilio)
+  Using cached charset_normalizer-3.4.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (37 kB)
+Collecting idna<4,>=2.5 (from requests>=2.0.0->twilio)
+  Using cached idna-3.11-py3-none-any.whl.metadata (8.4 kB)
+Collecting certifi>=2017.4.17 (from requests>=2.0.0->twilio)
+  Using cached certifi-2026.1.4-py3-none-any.whl.metadata (2.5 kB)
+Collecting anyio<5,>=3.6.2 (from starlette<0.51.0,>=0.40.0->fastapi)
+  Using cached anyio-4.12.1-py3-none-any.whl.metadata (4.3 kB)
+Collecting MarkupSafe>=0.9.2 (from Mako->alembic)
+  Using cached markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl.metadata (2.7 kB)
+Using cached fastapi-0.128.0-py3-none-any.whl (103 kB)
+Using cached uvicorn-0.40.0-py3-none-any.whl (68 kB)
+Downloading sqlalchemy-2.0.46-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (3.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 3.3/3.3 MB 3.2 MB/s eta 0:00:00
+Using cached psycopg2_binary-2.9.11-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.whl (4.2 MB)
+Downloading alembic-1.18.1-py3-none-any.whl (260 kB)
+Using cached python_jose-3.5.0-py2.py3-none-any.whl (34 kB)
+Using cached passlib-1.7.4-py2.py3-none-any.whl (525 kB)
+Using cached bcrypt-5.0.0-cp39-abi3-manylinux_2_34_x86_64.whl (278 kB)
+Downloading python_multipart-0.0.22-py3-none-any.whl (24 kB)
+Downloading boto3-1.42.34-py3-none-any.whl (140 kB)
+Downloading twilio-9.10.0-py2.py3-none-any.whl (2.3 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 2.3/2.3 MB 3.6 MB/s eta 0:00:00
+Using cached redis-7.1.0-py3-none-any.whl (354 kB)
+Using cached aiohttp-3.13.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (1.8 MB)
+Using cached aiohttp_retry-2.9.1-py3-none-any.whl (10.0 kB)
+Using cached annotated_doc-0.0.4-py3-none-any.whl (5.3 kB)
+Downloading botocore-1.42.34-py3-none-any.whl (14.6 MB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 14.6/14.6 MB 4.6 MB/s eta 0:00:00
+Using cached click-8.3.1-py3-none-any.whl (108 kB)
+Using cached ecdsa-0.19.1-py2.py3-none-any.whl (150 kB)
+Downloading greenlet-3.3.1-cp312-cp312-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl (609 kB)
+   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 609.9/609.9 kB 3.9 MB/s eta 0:00:00
+Using cached h11-0.16.0-py3-none-any.whl (37 kB)
+Downloading jmespath-1.1.0-py3-none-any.whl (20 kB)
+Downloading pyasn1-0.6.2-py3-none-any.whl (83 kB)
+Using cached pydantic-2.12.5-py3-none-any.whl (463 kB)
+Using cached pydantic_core-2.41.5-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl (2.1 MB)
+Using cached PyJWT-2.10.1-py3-none-any.whl (22 kB)
+Using cached requests-2.32.5-py3-none-any.whl (64 kB)
+Using cached rsa-4.9.1-py3-none-any.whl (34 kB)
+Downloading s3transfer-0.16.0-py3-none-any.whl (86 kB)
+Using cached starlette-0.50.0-py3-none-any.whl (74 kB)
+Using cached typing_extensions-4.15.0-py3-none-any.whl (44 kB)
+Using cached mako-1.3.10-py3-none-any.whl (78 kB)
+Using cached aiohappyeyeballs-2.6.1-py3-none-any.whl (15 kB)
+Using cached aiosignal-1.4.0-py3-none-any.whl (7.5 kB)
+Using cached annotated_types-0.7.0-py3-none-any.whl (13 kB)
+Using cached anyio-4.12.1-py3-none-any.whl (113 kB)
+Using cached attrs-25.4.0-py3-none-any.whl (67 kB)
+Using cached certifi-2026.1.4-py3-none-any.whl (152 kB)
+Using cached charset_normalizer-3.4.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (153 kB)
+Using cached frozenlist-1.8.0-cp312-cp312-manylinux1_x86_64.manylinux_2_28_x86_64.manylinux_2_5_x86_64.whl (242 kB)
+Using cached idna-3.11-py3-none-any.whl (71 kB)
+Using cached markupsafe-3.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (22 kB)
+Using cached multidict-6.7.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (256 kB)
+Using cached propcache-0.4.1-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (221 kB)
+Using cached python_dateutil-2.9.0.post0-py2.py3-none-any.whl (229 kB)
+Using cached six-1.17.0-py2.py3-none-any.whl (11 kB)
+Using cached typing_inspection-0.4.2-py3-none-any.whl (14 kB)
+Using cached urllib3-2.6.3-py3-none-any.whl (131 kB)
+Using cached yarl-1.22.0-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl (377 kB)
+Installing collected packages: passlib, urllib3, typing-extensions, six, redis, python-multipart, PyJWT, pyasn1, psycopg2-binary, propcache, multidict, MarkupSafe, jmespath, idna, h11, greenlet, frozenlist, click, charset_normalizer, certifi, bcrypt, attrs, annotated-types, annotated-doc, aiohappyeyeballs, yarl, uvicorn, typing-inspection, sqlalchemy, rsa, requests, python-dateutil, pydantic-core, Mako, ecdsa, anyio, aiosignal, starlette, python-jose, pydantic, botocore, alembic, aiohttp, s3transfer, fastapi, aiohttp-retry, twilio, boto3
+Successfully installed Mako-1.3.10 MarkupSafe-3.0.3 PyJWT-2.10.1 aiohappyeyeballs-2.6.1 aiohttp-3.13.3 aiohttp-retry-2.9.1 aiosignal-1.4.0 alembic-1.18.1 annotated-doc-0.0.4 annotated-types-0.7.0 anyio-4.12.1 attrs-25.4.0 bcrypt-5.0.0 boto3-1.42.34 botocore-1.42.34 certifi-2026.1.4 charset_normalizer-3.4.4 click-8.3.1 ecdsa-0.19.1 fastapi-0.128.0 frozenlist-1.8.0 greenlet-3.3.1 h11-0.16.0 idna-3.11 jmespath-1.1.0 multidict-6.7.0 passlib-1.7.4 propcache-0.4.1 psycopg2-binary-2.9.11 pyasn1-0.6.2 pydantic-2.12.5 pydantic-core-2.41.5 python-dateutil-2.9.0.post0 python-jose-3.5.0 python-multipart-0.0.22 redis-7.1.0 requests-2.32.5 rsa-4.9.1 s3transfer-0.16.0 six-1.17.0 sqlalchemy-2.0.46 starlette-0.50.0 twilio-9.10.0 typing-extensions-4.15.0 typing-inspection-0.4.2 urllib3-2.6.3 uvicorn-0.40.0 yarl-1.22.0
+
+[notice] A new release of pip is available: 25.0.1 -> 25.3
+[notice] To update, run: pip install --upgrade pip
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ mkdir -p app/{api,models,schemas,services,core}
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ touch app/__init__.py
+touch app/main.py
+touch app/api/__init__.py
+touch app/models/__init__.py
+touch app/schemas/__init__.py
+touch app/services/__init__.py
+touch app/core/{config.py,security.py,database.py}
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ pip freeze > requirements.txt
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ cd ..
+((venv) ) beni@T14-BC:~/XF/Echon$ npm create vite@latest frontend -- --template react-ts
+
+> npx
+> "create-vite" frontend --template react-ts
+
+│
+◇  Use rolldown-vite (Experimental)?:
+│  No
+│
+◇  Install with npm and start now?
+│  Yes
+│
+◇  Scaffolding project in /home/beni/XF/Echon/frontend...
+│
+◇  Installing dependencies with npm...
+
+added 225 packages, and audited 226 packages in 50s
+
+45 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+│
+◇  Starting dev server...
+
+> frontend@0.0.0 dev
+> vite
+
+
+  VITE v7.3.1  ready in 384 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+^C
+((venv) ) beni@T14-BC:~/XF/Echon$ cd frontend/
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ npm install
+
+added 50 packages, and audited 226 packages in 1s
+
+45 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ npm install -D tailwindcss@3.4.19 postcss@8.5.6 autoprefixer@10.4.23
+
+added 62 packages, and audited 288 packages in 11s
+
+61 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ npx tailwindcss init -p
+
+Created Tailwind CSS config file: tailwind.config.js
+Created PostCSS config file: postcss.config.js
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ npm install @tanstack/react-query axios zustand
+
+added 24 packages, and audited 312 packages in 10s
+
+68 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ npm install framer-motion
+
+added 4 packages, and audited 316 packages in 4s
+
+68 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ npm install three @react-three/fiber @react-three/drei
+
+added 55 packages, and audited 371 packages in 25s
+
+71 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ npm install react-router-dom
+
+added 4 packages, and audited 375 packages in 2s
+
+72 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ npm run dev
+
+> frontend@0.0.0 dev
+> vite
+
+1:00:38 AM [vite] (client) Re-optimizing dependencies because lockfile has changed
+
+  VITE v7.3.1  ready in 273 ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+  ➜  press h + enter to show help
+
+warn - The `content` option in your Tailwind CSS configuration is missing or empty.
+warn - Configure your content sources or your generated CSS will be missing styles.
+warn - https://tailwindcss.com/docs/content-configuration
+^C
+((venv) ) beni@T14-BC:~/XF/Echon/frontend$ cd ..
+((venv) ) beni@T14-BC:~/XF/Echon$ cd backend/
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ pip install --upgrade pip
+Requirement already satisfied: pip in ./venv/lib/python3.12/site-packages (25.0.1)
+Collecting pip
+  Using cached pip-25.3-py3-none-any.whl.metadata (4.7 kB)
+Using cached pip-25.3-py3-none-any.whl (1.8 MB)
+Installing collected packages: pip
+  Attempting uninstall: pip
+    Found existing installation: pip 25.0.1
+    Uninstalling pip-25.0.1:
+      Successfully uninstalled pip-25.0.1
+Successfully installed pip-25.3
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ pip install -r requirements.txt 
+Requirement already satisfied: aiohappyeyeballs==2.6.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 1)) (2.6.1)
+Requirement already satisfied: aiohttp==3.13.3 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 2)) (3.13.3)
+Requirement already satisfied: aiohttp-retry==2.9.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 3)) (2.9.1)
+Requirement already satisfied: aiosignal==1.4.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 4)) (1.4.0)
+Requirement already satisfied: alembic==1.18.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 5)) (1.18.1)
+Requirement already satisfied: annotated-doc==0.0.4 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 6)) (0.0.4)
+Requirement already satisfied: annotated-types==0.7.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 7)) (0.7.0)
+Requirement already satisfied: anyio==4.12.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 8)) (4.12.1)
+Requirement already satisfied: attrs==25.4.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 9)) (25.4.0)
+Requirement already satisfied: bcrypt==5.0.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 10)) (5.0.0)
+Requirement already satisfied: boto3==1.42.34 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 11)) (1.42.34)
+Requirement already satisfied: botocore==1.42.34 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 12)) (1.42.34)
+Requirement already satisfied: certifi==2026.1.4 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 13)) (2026.1.4)
+Requirement already satisfied: charset-normalizer==3.4.4 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 14)) (3.4.4)
+Requirement already satisfied: click==8.3.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 15)) (8.3.1)
+Requirement already satisfied: ecdsa==0.19.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 16)) (0.19.1)
+Requirement already satisfied: fastapi==0.128.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 17)) (0.128.0)
+Requirement already satisfied: frozenlist==1.8.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 18)) (1.8.0)
+Requirement already satisfied: greenlet==3.3.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 19)) (3.3.1)
+Requirement already satisfied: h11==0.16.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 20)) (0.16.0)
+Requirement already satisfied: idna==3.11 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 21)) (3.11)
+Requirement already satisfied: jmespath==1.1.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 22)) (1.1.0)
+Requirement already satisfied: Mako==1.3.10 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 23)) (1.3.10)
+Requirement already satisfied: MarkupSafe==3.0.3 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 24)) (3.0.3)
+Requirement already satisfied: multidict==6.7.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 25)) (6.7.0)
+Requirement already satisfied: passlib==1.7.4 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 26)) (1.7.4)
+Requirement already satisfied: propcache==0.4.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 27)) (0.4.1)
+Requirement already satisfied: psycopg2-binary==2.9.11 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 28)) (2.9.11)
+Requirement already satisfied: pyasn1==0.6.2 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 29)) (0.6.2)
+Requirement already satisfied: pydantic==2.12.5 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 30)) (2.12.5)
+Requirement already satisfied: pydantic_core==2.41.5 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 31)) (2.41.5)
+Requirement already satisfied: PyJWT==2.10.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 32)) (2.10.1)
+Requirement already satisfied: python-dateutil==2.9.0.post0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 33)) (2.9.0.post0)
+Requirement already satisfied: python-jose==3.5.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 34)) (3.5.0)
+Requirement already satisfied: python-multipart==0.0.22 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 35)) (0.0.22)
+Requirement already satisfied: redis==7.1.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 36)) (7.1.0)
+Requirement already satisfied: requests==2.32.5 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 37)) (2.32.5)
+Requirement already satisfied: rsa==4.9.1 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 38)) (4.9.1)
+Requirement already satisfied: s3transfer==0.16.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 39)) (0.16.0)
+Requirement already satisfied: six==1.17.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 40)) (1.17.0)
+Requirement already satisfied: SQLAlchemy==2.0.46 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 41)) (2.0.46)
+Requirement already satisfied: starlette==0.50.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 42)) (0.50.0)
+Requirement already satisfied: twilio==9.10.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 43)) (9.10.0)
+Requirement already satisfied: typing-inspection==0.4.2 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 44)) (0.4.2)
+Requirement already satisfied: typing_extensions==4.15.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 45)) (4.15.0)
+Requirement already satisfied: urllib3==2.6.3 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 46)) (2.6.3)
+Requirement already satisfied: uvicorn==0.40.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 47)) (0.40.0)
+Requirement already satisfied: yarl==1.22.0 in ./venv/lib/python3.12/site-packages (from -r requirements.txt (line 48)) (1.22.0)
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ pip freeze > requirements.txt
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ openssl rand hex32
+rand: Can't parse "hex32" as a number
+rand: Use -help for summary.
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ openssl rand hex 32
+rand: Use -help for summary.
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ openssl rand -hex 32
+54034a0e067c13d4d797fce2d3fd8b20136de68b8dc3f97c55f944a797dc62c7
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ ^C
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ cd ..
+((venv) ) beni@T14-BC:~/XF/Echon$ chmod +x start.sh 
+((venv) ) beni@T14-BC:~/XF/Echon$ docker-compose up -d
+WARN[0001] /home/beni/XF/Echon/docker-compose.yml: the attribute `version` is obsolete, it will be ignored, please remove it to avoid potential confusion 
+[+] Running 5/5
+ ✔ Network echon_default         Created                                                                                                                                                   0.2s 
+ ✔ Volume "echon_redis_data"     Created                                                                                                                                                   0.0s 
+ ✔ Volume "echon_postgres_data"  Created                                                                                                                                                   0.0s 
+ ✔ Container echon_postgres      Started                                                                                                                                                   1.3s 
+ ✔ Container echon_redis         Started                                                                                                                                                   1.3s 
+((venv) ) beni@T14-BC:~/XF/Echon$ docker ps
+CONTAINER ID   IMAGE                COMMAND                  CREATED         STATUS                            PORTS                                           NAMES
+ee0b603500a3   postgres:15-alpine   "docker-entrypoint.s…"   5 seconds ago   Up 5 seconds (health: starting)   0.0.0.0:55432->5432/tcp, [::]:55432->5432/tcp   echon_postgres
+06675dacf7e8   redis:7-alpine       "docker-entrypoint.s…"   5 seconds ago   Up 5 seconds (health: starting)   0.0.0.0:65379->6379/tcp, [::]:65379->6379/tcp   echon_redis
+((venv) ) beni@T14-BC:~/XF/Echon$ cd backend/
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ uvicorn app.main:app --reload
+INFO:     Will watch for changes in these directories: ['/home/beni/XF/Echon/backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [44536] using StatReload
+Process SpawnProcess-1:
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/beni/XF/Echon/backend/venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/home/beni/XF/Echon/backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 195, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/beni/XF/Echon/backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/home/beni/XF/Echon/backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/home/beni/XF/Echon/backend/venv/lib/python3.12/site-packages/uvicorn/config.py", line 439, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/beni/XF/Echon/backend/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 22, in import_from_string
+    raise exc from None
+  File "/home/beni/XF/Echon/backend/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 999, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/beni/XF/Echon/backend/app/main.py", line 8, in <module>
+    from .core.config import settings
+  File "/home/beni/XF/Echon/backend/app/core/config.py", line 6, in <module>
+    from pydantic_settings import BaseSettings
+ModuleNotFoundError: No module named 'pydantic_settings'
+^CINFO:     Stopping reloader process [44536]
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ pip install pydantic-settings
+Collecting pydantic-settings
+  Using cached pydantic_settings-2.12.0-py3-none-any.whl.metadata (3.4 kB)
+Requirement already satisfied: pydantic>=2.7.0 in ./venv/lib/python3.12/site-packages (from pydantic-settings) (2.12.5)
+Collecting python-dotenv>=0.21.0 (from pydantic-settings)
+  Using cached python_dotenv-1.2.1-py3-none-any.whl.metadata (25 kB)
+Requirement already satisfied: typing-inspection>=0.4.0 in ./venv/lib/python3.12/site-packages (from pydantic-settings) (0.4.2)
+Requirement already satisfied: annotated-types>=0.6.0 in ./venv/lib/python3.12/site-packages (from pydantic>=2.7.0->pydantic-settings) (0.7.0)
+Requirement already satisfied: pydantic-core==2.41.5 in ./venv/lib/python3.12/site-packages (from pydantic>=2.7.0->pydantic-settings) (2.41.5)
+Requirement already satisfied: typing-extensions>=4.14.1 in ./venv/lib/python3.12/site-packages (from pydantic>=2.7.0->pydantic-settings) (4.15.0)
+Using cached pydantic_settings-2.12.0-py3-none-any.whl (51 kB)
+Using cached python_dotenv-1.2.1-py3-none-any.whl (21 kB)
+Installing collected packages: python-dotenv, pydantic-settings
+Successfully installed pydantic-settings-2.12.0 python-dotenv-1.2.1
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ uvicorn app.main:app --reload
+INFO:     Will watch for changes in these directories: ['/home/beni/XF/Echon/backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [45551] using StatReload
+2026-01-26 01:49:03,946 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-01-26 01:49:03,946 INFO sqlalchemy.engine.Engine [raw sql] {}
+2026-01-26 01:49:03,948 INFO sqlalchemy.engine.Engine select current_schema()
+2026-01-26 01:49:03,948 INFO sqlalchemy.engine.Engine [raw sql] {}
+2026-01-26 01:49:03,950 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-01-26 01:49:03,950 INFO sqlalchemy.engine.Engine [raw sql] {}
+2026-01-26 01:49:03,952 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-26 01:49:03,952 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     Started server process [45563]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+^CINFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [45563]
+INFO:     Stopping reloader process [45551]
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ pip freeze > requirements.txt
+((venv) ) beni@T14-BC:~/XF/Echon/backend$ 

@@ -1,0 +1,217 @@
+/**
+ * Memory Card Component
+ * Display a single memory in the timeline
+ * 
+ * PATH: echon/frontend/src/components/MemoryCard.tsx
+ */
+
+import { useState } from 'react';
+import { motion } from 'framer-motion';
+import { Post } from '../lib/api';
+import { postsApi } from '../lib/api';
+
+interface MemoryCardProps {
+  post: Post;
+  onImageClick: (url: string) => void;
+}
+
+export default function MemoryCard({ post, onImageClick }: MemoryCardProps) {
+  const [showComments, setShowComments] = useState(false);
+  const [newComment, setNewComment] = useState('');
+  const [commenting, setCommenting] = useState(false);
+  const [localCommentCount, setLocalCommentCount] = useState(post.comment_count);
+  const [localReactionCount, setLocalReactionCount] = useState(post.reaction_count);
+  const [hasReacted, setHasReacted] = useState(false);
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim()) return;
+
+    setCommenting(true);
+    try {
+      await postsApi.addComment(post.id, newComment);
+      setNewComment('');
+      setLocalCommentCount(prev => prev + 1);
+    } catch (error) {
+      console.error('Failed to add comment:', error);
+    } finally {
+      setCommenting(false);
+    }
+  };
+
+  const handleReaction = async () => {
+    try {
+      await postsApi.addReaction(post.id, 'heart');
+      if (!hasReacted) {
+        setLocalReactionCount(prev => prev + 1);
+        setHasReacted(true);
+      }
+    } catch (error) {
+      console.error('Failed to add reaction:', error);
+    }
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return null;
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="echon-card"
+    >
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="w-10 h-10 rounded-full bg-echon-shadow border border-echon-gold flex items-center justify-center">
+          <span className="text-echon-cream font-semibold">
+            {post.user?.name?.charAt(0) || '?'}
+          </span>
+        </div>
+        <div>
+          <p className="text-echon-cream font-semibold">
+            {post.user?.name || 'Unknown'}
+          </p>
+          {post.event_date && (
+            <p className="text-echon-cream-dark text-sm">
+              {formatDate(post.event_date)}
+            </p>
+          )}
+        </div>
+      </div>
+
+      {/* Media */}
+      {post.media_urls && post.media_urls.length > 0 && (
+        <div className={`grid gap-2 mb-4 ${
+          post.media_urls.length === 1 ? 'grid-cols-1' :
+          post.media_urls.length === 2 ? 'grid-cols-2' :
+          post.media_urls.length === 3 ? 'grid-cols-3' :
+          'grid-cols-2'
+        }`}>
+          {post.media_urls.slice(0, 4).map((url, idx) => (
+            <div
+              key={idx}
+              className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+              onClick={() => onImageClick(`http://localhost:8000${url}`)}
+            >
+              <img
+                src={`http://localhost:8000${url}`}
+                alt={`Memory ${idx + 1}`}
+                className="w-full h-full object-cover"
+              />
+              {idx === 3 && post.media_urls!.length > 4 && (
+                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                  <span className="text-white text-2xl font-bold">
+                    +{post.media_urls!.length - 4}
+                  </span>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Content */}
+      {post.content && (
+        <p className="text-echon-cream mb-4 whitespace-pre-wrap">
+          {post.content}
+        </p>
+      )}
+
+      {/* Location */}
+      {post.location && (
+        <p className="text-echon-gold text-sm mb-4 flex items-center gap-2">
+          <span>📍</span>
+          {post.location}
+        </p>
+      )}
+
+      {/* Tags */}
+      {post.tags && post.tags.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-4">
+          {post.tags.map((tag, idx) => (
+            <span
+              key={idx}
+              className="text-xs px-3 py-1 rounded-full bg-echon-shadow border border-echon-wood text-echon-cream-dark"
+            >
+              #{tag}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Actions */}
+      <div className="flex items-center gap-6 pt-4 border-t border-echon-wood">
+        <button
+          onClick={handleReaction}
+          className={`flex items-center gap-2 transition-colors ${
+            hasReacted ? 'text-echon-candle' : 'text-echon-cream-dark hover:text-echon-cream'
+          }`}
+        >
+          <span className="text-xl">{hasReacted ? '❤️' : '🤍'}</span>
+          <span className="text-sm">{localReactionCount}</span>
+        </button>
+        <button
+          onClick={() => setShowComments(!showComments)}
+          className="flex items-center gap-2 text-echon-cream-dark hover:text-echon-cream transition-colors"
+        >
+          <span className="text-xl">💬</span>
+          <span className="text-sm">{localCommentCount}</span>
+        </button>
+      </div>
+
+      {/* Comments Section */}
+      {showComments && (
+        <div className="mt-4 pt-4 border-t border-echon-wood space-y-4">
+          {/* Add Comment Form */}
+          <form onSubmit={handleAddComment} className="flex gap-2">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Add a comment..."
+              className="echon-input flex-1"
+              disabled={commenting}
+            />
+            <button
+              type="submit"
+              disabled={commenting || !newComment.trim()}
+              className="echon-btn-secondary"
+            >
+              {commenting ? '...' : 'Post'}
+            </button>
+          </form>
+
+          {/* Existing Comments (placeholder) */}
+          {post.comments && post.comments.length > 0 && (
+            <div className="space-y-3">
+              {post.comments.map((comment) => (
+                <div key={comment.id} className="flex gap-3">
+                  <div className="w-8 h-8 rounded-full bg-echon-shadow border border-echon-wood flex items-center justify-center flex-shrink-0">
+                    <span className="text-echon-cream text-xs">
+                      {comment.user?.name?.charAt(0) || '?'}
+                    </span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-echon-cream text-sm font-semibold">
+                      {comment.user?.name || 'Unknown'}
+                    </p>
+                    <p className="text-echon-cream-dark text-sm">
+                      {comment.content}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </motion.div>
+  );
+}

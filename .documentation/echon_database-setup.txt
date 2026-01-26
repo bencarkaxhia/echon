@@ -1,0 +1,170 @@
+# 📁 ECHON - DATABASE SETUP FILES
+
+This document lists all database initialization and migration files.
+
+---
+
+## 🆕 NEW FILES CREATED
+
+### Database Initialization
+
+1. **echon/backend/init_db.py**
+   - Quick script to create all database tables
+   - Run with: `python init_db.py`
+
+### Alembic Migration System
+
+2. **echon/backend/alembic.ini**
+   - Alembic configuration file
+
+3. **echon/backend/alembic/env.py**
+   - Alembic environment setup
+   - Configures migrations with our models
+
+4. **echon/backend/alembic/script.py.mako**
+   - Template for generating new migrations
+
+5. **echon/backend/alembic/versions/001_initial_schema.py**
+   - Initial database migration
+   - Creates all 8 tables
+
+---
+
+## 📂 DIRECTORY STRUCTURE
+
+```
+echon/backend/
+├── init_db.py                    ← NEW (Quick table creation)
+├── alembic.ini                   ← NEW (Alembic config)
+└── alembic/                      ← NEW (Migrations folder)
+    ├── env.py                    ← NEW
+    ├── script.py.mako            ← NEW
+    └── versions/                 ← NEW
+        └── 001_initial_schema.py ← NEW (Initial migration)
+```
+
+---
+
+## 🚀 HOW TO CREATE TABLES
+
+### **OPTION A: Quick Method (Use This Now)**
+
+```bash
+cd echon/backend
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Run init script
+python init_db.py
+```
+
+**Expected output:**
+```
+🔨 Creating database tables...
+✅ Database tables created successfully!
+
+Tables created:
+  - users
+  - family_spaces
+  - space_members
+  - posts
+  - comments
+  - reactions
+  - post_tags
+  - invitations
+```
+
+---
+
+### **OPTION B: Proper Method (Alembic Migrations)**
+
+```bash
+cd echon/backend
+
+# Activate virtual environment
+source venv/bin/activate
+
+# Run migrations
+alembic upgrade head
+```
+
+**Expected output:**
+```
+INFO  [alembic.runtime.migration] Running upgrade  -> 001, Initial schema
+```
+
+---
+
+## ✅ VERIFY TABLES EXIST
+
+### Connect to PostgreSQL:
+```bash
+docker exec -it echon_postgres psql -U echon -d echon_db
+```
+
+### List tables:
+```sql
+\dt
+```
+
+**Expected output:**
+```
+              List of relations
+ Schema |      Name       | Type  | Owner 
+--------+-----------------+-------+-------
+ public | users           | table | echon
+ public | family_spaces   | table | echon
+ public | space_members   | table | echon
+ public | posts           | table | echon
+ public | comments        | table | echon
+ public | reactions       | table | echon
+ public | post_tags       | table | echon
+ public | invitations     | table | echon
+(8 rows)
+```
+
+### Exit PostgreSQL:
+```sql
+\q
+```
+
+---
+
+## 🧪 TEST AFTER TABLES ARE CREATED
+
+Once tables exist, test the auth endpoints:
+
+1. **Go to**: http://localhost:8000/docs
+
+2. **Test POST /api/auth/register**:
+   ```json
+   {
+     "name": "Test User",
+     "email": "test@echon.app",
+     "password": "password123"
+   }
+   ```
+
+3. **Should return**: Token + user data (201 Created)
+
+4. **Test POST /api/auth/login**:
+   ```json
+   {
+     "email_or_phone": "test@echon.app",
+     "password": "password123"
+   }
+   ```
+
+5. **Should return**: Token + user data (200 OK)
+
+---
+
+## 📝 NOTES
+
+- **Use Option A** for quick setup during development
+- **Use Option B** for production (proper version control of schema changes)
+- Both methods create the exact same tables
+- You only need to run ONE of these methods
+
+---

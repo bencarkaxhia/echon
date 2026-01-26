@@ -1,0 +1,181 @@
+.
+├── .documentation
+│   ├── echon-guidelines_faq.md
+│   ├── echon_backend_part1_family_door.md
+│   ├── echon_backend_part1_memories_door.md
+│   ├── echon_backend_part1_now_door.md
+│   ├── echon_backend_part1_stories_door.md
+│   ├── echon_backend_requirements.txt
+│   ├── echon_database-setup.txt
+│   ├── echon_elder_boarding.md
+│   ├── echon_frontend_part1.txt
+│   ├── echon_frontend_part2.txt
+│   ├── echon_frontend_part2_family_door.md
+│   ├── echon_frontend_part2_memories_door.md
+│   ├── echon_frontend_part2_now_door.md
+│   ├── echon_frontend_part2_stories_door.md
+│   ├── echon_install_console_history.txt
+│   ├── echon_onboarding_flow.md
+│   ├── echon_phase0_testings.md
+│   ├── echon_space_interface.md
+│   ├── echon_startup_plan.md
+│   ├── echon_technical_specs.md
+│   └── echon_visuals_and_structure.md
+├── .gitignore
+├── Quickstart.md
+├── README.md
+├── backend
+│   ├── .env
+│   ├── .env.example
+│   ├── .git
+│   │   ├── HEAD
+│   │   ├── branches
+│   │   ├── config
+│   │   ├── description
+│   │   ├── hooks
+│   │   │   ├── applypatch-msg.sample
+│   │   │   ├── commit-msg.sample
+│   │   │   ├── fsmonitor-watchman.sample
+│   │   │   ├── post-update.sample
+│   │   │   ├── pre-applypatch.sample
+│   │   │   ├── pre-commit.sample
+│   │   │   ├── pre-merge-commit.sample
+│   │   │   ├── pre-push.sample
+│   │   │   ├── pre-rebase.sample
+│   │   │   ├── pre-receive.sample
+│   │   │   ├── prepare-commit-msg.sample
+│   │   │   ├── push-to-checkout.sample
+│   │   │   └── update.sample
+│   │   ├── info
+│   │   │   └── exclude
+│   │   ├── objects
+│   │   │   ├── info
+│   │   │   └── pack
+│   │   └── refs
+│   │       ├── heads
+│   │       └── tags
+│   ├── alembic
+│   │   ├── README
+│   │   ├── env.py
+│   │   ├── script.py.mako
+│   │   └── versions
+│   │       └── 001_inital_schema.py
+│   ├── alembic.ini
+│   ├── app
+│   │   ├── __init__.py
+│   │   ├── __pycache__
+│   │   │   ├── __init__.cpython-312.pyc
+│   │   │   └── main.cpython-312.pyc
+│   │   ├── api
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-312.pyc
+│   │   │   │   ├── activity.cpython-312.pyc
+│   │   │   │   ├── auth.cpython-312.pyc
+│   │   │   │   ├── family.cpython-312.pyc
+│   │   │   │   ├── posts.cpython-312.pyc
+│   │   │   │   ├── spaces.cpython-312.pyc
+│   │   │   │   └── stories.cpython-312.pyc
+│   │   │   ├── activity.py
+│   │   │   ├── auth.py
+│   │   │   ├── family.py
+│   │   │   ├── posts.py
+│   │   │   ├── spaces.py
+│   │   │   └── stories.py
+│   │   ├── core
+│   │   │   ├── __pycache__
+│   │   │   │   ├── config.cpython-312.pyc
+│   │   │   │   ├── database.cpython-312.pyc
+│   │   │   │   ├── security.cpython-312.pyc
+│   │   │   │   └── storage.cpython-312.pyc
+│   │   │   ├── config.py
+│   │   │   ├── database.py
+│   │   │   ├── security.py
+│   │   │   └── storage.py
+│   │   ├── main.py
+│   │   ├── models
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-312.pyc
+│   │   │   │   ├── invitation.cpython-312.pyc
+│   │   │   │   ├── post.cpython-312.pyc
+│   │   │   │   ├── space.cpython-312.pyc
+│   │   │   │   └── user.cpython-312.pyc
+│   │   │   ├── invitation.py
+│   │   │   ├── post.py
+│   │   │   ├── space.py
+│   │   │   └── user.py
+│   │   ├── schemas
+│   │   │   ├── __init__.py
+│   │   │   ├── __pycache__
+│   │   │   │   ├── __init__.cpython-312.pyc
+│   │   │   │   ├── activity.cpython-312.pyc
+│   │   │   │   ├── auth.cpython-312.pyc
+│   │   │   │   ├── family.cpython-312.pyc
+│   │   │   │   ├── post.cpython-312.pyc
+│   │   │   │   ├── space.cpython-312.pyc
+│   │   │   │   └── story.cpython-312.pyc
+│   │   │   ├── activity.py
+│   │   │   ├── auth.py
+│   │   │   ├── family.py
+│   │   │   ├── post.py
+│   │   │   ├── space.py
+│   │   │   └── story.py
+│   │   └── services
+│   │       └── __init__.py
+│   ├── docker-compose.yml
+│   ├── init_db.py
+│   └── requirements.txt
+├── docker-compose.yml
+├── echon_structure_tree.txt
+├── frontend
+│   ├── .env
+│   ├── .env.example
+│   ├── .gitignore
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── postcss.config.js
+│   ├── public
+│   │   └── vite.svg
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.tsx
+│   │   ├── assets
+│   │   │   └── react.svg
+│   │   ├── components
+│   │   │   ├── ActivityCard.tsx
+│   │   │   ├── DoorScene.tsx
+│   │   │   ├── EntranceSequence.tsx
+│   │   │   ├── MemberCard.tsx
+│   │   │   ├── MemoryCard.tsx
+│   │   │   ├── ProtectedRoute.tsx
+│   │   │   ├── StoryCard.tsx
+│   │   │   ├── UploadMemory.tsx
+│   │   │   └── VoiceRecorder.tsx
+│   │   ├── index.css
+│   │   ├── lib
+│   │   │   ├── api.ts
+│   │   │   └── auth.ts
+│   │   ├── main.tsx
+│   │   └── pages
+│   │       ├── CreateSpace.tsx
+│   │       ├── Family.tsx
+│   │       ├── Landing.tsx
+│   │       ├── Login.tsx
+│   │       ├── MemberProfile.tsx
+│   │       ├── Memories.tsx
+│   │       ├── Now.tsx
+│   │       ├── Register.tsx
+│   │       ├── Space.tsx
+│   │       └── Stories.tsx
+│   ├── tailwind.config.js
+│   ├── tsconfig.app.json
+│   ├── tsconfig.json
+│   ├── tsconfig.node.json
+│   └── vite.config.ts
+└── start.sh
+
+32 directories, 146 files
