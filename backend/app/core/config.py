@@ -21,10 +21,10 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # Database
-    DATABASE_URL: str = "postgresql://echon:echon_dev_password@localhost:55432/echon_db"
+    DATABASE_URL: str = "postgresql://echon:echon_dev_password@localhost:5432/echon_db"
     
     # Redis
-    REDIS_URL: str = "redis://localhost:65379/0"
+    REDIS_URL: str = "redis://localhost:6379/0"
     
     # CORS (Frontend URLs)
     CORS_ORIGINS: list = [
