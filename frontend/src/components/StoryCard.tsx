@@ -5,7 +5,6 @@
  * PATH: echon/frontend/src/components/StoryCard.tsx
  */
 
-import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Story } from '../lib/api';
 
@@ -16,7 +15,7 @@ interface StoryCardProps {
 }
 
 export default function StoryCard({ story, onDelete, canDelete }: StoryCardProps) {
-  const [showDetails, setShowDetails] = useState(false);
+  // Removed unused showDetails state
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return null;

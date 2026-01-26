@@ -6,7 +6,7 @@
  */
 
 import { useState, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { postsApi } from '../lib/api';
 import { getCurrentSpace } from '../lib/auth';
 
