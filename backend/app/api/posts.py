@@ -57,8 +57,9 @@ async def upload_media(
             file_path = await save_audio(file, subfolder="memories/audio")
         elif media_type == "pdf":
             # Use the general save_file function for PDFs
-            result = await save_file(file, subfolder="memories/documents")
-            file_path = result["path"]
+            result = await save_image(file, subfolder="memories/photos")
+            # Use full URL if available (R2), otherwise use key (local)
+            file_path = result.get("url") or result["original"]
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
