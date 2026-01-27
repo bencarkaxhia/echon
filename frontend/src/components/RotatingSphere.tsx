@@ -14,12 +14,31 @@ interface RotatingSphereProps {
   familyName: string;
   emblemUrl?: string;
   onEmblemUpdate?: (url: string) => void;
+  hoveredDoor?: string | null;  // Which door is being hovered
 }
 
-export default function RotatingSphere({ familyName, emblemUrl, onEmblemUpdate }: RotatingSphereProps) {
+export default function RotatingSphere({ familyName, emblemUrl, onEmblemUpdate, hoveredDoor }: RotatingSphereProps) {
   const [uploading, setUploading] = useState(false);
   const [currentEmblem, setCurrentEmblem] = useState(emblemUrl);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Tilt angles based on door positions
+  const getTiltAngles = () => {
+    switch(hoveredDoor) {
+      case 'memories':  // Top-left
+        return { rotateX: -8, rotateY: -8 };
+      case 'stories':   // Top-right
+        return { rotateX: -8, rotateY: 8 };
+      case 'family':    // Bottom-left
+        return { rotateX: 8, rotateY: -8 };
+      case 'now':       // Bottom-right
+        return { rotateX: 8, rotateY: 8 };
+      default:
+        return { rotateX: 0, rotateY: 0 };
+    }
+  };
+
+  const tiltAngles = getTiltAngles();
 
   const handleEmblemUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -51,7 +70,20 @@ export default function RotatingSphere({ familyName, emblemUrl, onEmblemUpdate }
   };
 
   return (
-    <div className="relative" style={{ perspective: '1000px' }}>
+    <motion.div 
+      className="relative" 
+      style={{ perspective: '1000px' }}
+      animate={{
+        rotateX: tiltAngles.rotateX,
+        rotateY: tiltAngles.rotateY
+      }}
+      transition={{
+        duration: 0.6,
+        type: 'spring',
+        stiffness: 150,
+        damping: 20
+      }}
+    >
       {/* Rotating glow rings */}
       <div className="absolute inset-0 flex items-center justify-center">
         <motion.div
@@ -69,17 +101,31 @@ export default function RotatingSphere({ familyName, emblemUrl, onEmblemUpdate }
       {/* Main sphere */}
       <motion.div
         initial={{ scale: 0, rotateY: 0 }}
-        animate={{ scale: 1, rotateY: 360 }}
+        animate={{ 
+          scale: [1, 1.05, 1],  // Breathing effect
+          rotateY: 360,
+          opacity: [0.95, 1, 0.95]  // Subtle pulse
+        }}
         transition={{ 
-          scale: { duration: 1, delay: 0.5 },
-          rotateY: { duration: 60, repeat: Infinity, ease: 'linear' }
+          scale: { duration: 4, repeat: Infinity, ease: 'easeInOut' },  // 4s breathing
+          opacity: { duration: 4, repeat: Infinity, ease: 'easeInOut' },
+          rotateY: { duration: 60, repeat: Infinity, ease: 'linear' }  // Slow rotation
         }}
         className="relative"
         style={{ transformStyle: 'preserve-3d' }}
       >
-        {/* Glow effect */}
-        <div className="absolute inset-0 bg-echon-root-light opacity-30 rounded-full blur-3xl animate-pulse" 
-             style={{ animationDuration: '4s' }} 
+        {/* Glow effect - Breathes with sphere */}
+        <motion.div 
+          animate={{
+            scale: [1, 1.3, 1],
+            opacity: [0.2, 0.4, 0.2]
+          }}
+          transition={{
+            duration: 4,
+            repeat: Infinity,
+            ease: 'easeInOut'
+          }}
+          className="absolute inset-0 bg-echon-root-light rounded-full blur-3xl" 
         />
         
         {/* Clickable sphere */}
@@ -101,11 +147,46 @@ export default function RotatingSphere({ familyName, emblemUrl, onEmblemUpdate }
               />
             </div>
           ) : (
-            <div className="text-center p-4">
-              <p className="text-echon-gold text-4xl md:text-6xl font-bold mb-2 drop-shadow-lg">
+            <div className="text-center p-4 flex flex-col items-center justify-center h-full">
+              {/* Family Tree SVG */}
+              <svg 
+                viewBox="0 0 100 100" 
+                className="w-20 h-20 md:w-28 md:h-28 mb-2"
+                fill="none"
+              >
+                {/* Tree trunk */}
+                <rect x="45" y="60" width="10" height="30" fill="#78350f" rx="2"/>
+                
+                {/* Tree foliage - 3 circles for full tree */}
+                <circle cx="50" cy="35" r="18" fill="#166534" opacity="0.9"/>
+                <circle cx="38" cy="45" r="15" fill="#15803d" opacity="0.9"/>
+                <circle cx="62" cy="45" r="15" fill="#15803d" opacity="0.9"/>
+                
+                {/* Roots */}
+                <path 
+                  d="M 45 90 Q 35 85 30 90" 
+                  stroke="#78350f" 
+                  strokeWidth="2" 
+                  fill="none"
+                />
+                <path 
+                  d="M 55 90 Q 65 85 70 90" 
+                  stroke="#78350f" 
+                  strokeWidth="2" 
+                  fill="none"
+                />
+                
+                {/* Small leaves/details */}
+                <circle cx="45" cy="30" r="3" fill="#22c55e" opacity="0.8"/>
+                <circle cx="55" cy="32" r="3" fill="#22c55e" opacity="0.8"/>
+                <circle cx="50" cy="40" r="3" fill="#22c55e" opacity="0.8"/>
+              </svg>
+              
+              {/* Family name below tree */}
+              <p className="text-echon-gold text-2xl md:text-4xl font-bold mb-1">
                 {familyName.charAt(0)}
               </p>
-              <p className="text-echon-cream text-sm md:text-base font-serif drop-shadow-md">
+              <p className="text-echon-cream text-xs md:text-sm font-serif">
                 {familyName}
               </p>
             </div>
@@ -147,6 +228,6 @@ export default function RotatingSphere({ familyName, emblemUrl, onEmblemUpdate }
         className="hidden"
         disabled={uploading}
       />
-    </div>
+    </motion.div>
   );
 }
