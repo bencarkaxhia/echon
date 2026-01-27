@@ -125,7 +125,7 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
       </motion.button>
 
       {/* Hero copy */}
-      <motion.div
+      {/* <motion.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.7 }}
@@ -137,7 +137,7 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
         <p className="mt-2 text-echon-cream-dark text-sm md:text-base max-w-md mx-auto">
           Choose a door to explore your family&apos;s memories, stories, people, and life now.
         </p>
-      </motion.div>
+      </motion.div> */}
 
       {/* Central Emblem / Family Symbol - 3D Rotating Sphere */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">
