@@ -62,6 +62,7 @@ from .api.activity import router as activity_router
 from .api.invitations import router as invitations_router
 from .api.chat import router as chat_router
 from .api.search import router as search_router
+from .api.relationships import router as relationships_router
 
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(spaces_router, prefix="/api/spaces", tags=["spaces"])
@@ -72,6 +73,7 @@ app.include_router(activity_router, prefix="/api/activity", tags=["activity"])
 app.include_router(invitations_router, prefix="/api/invitations", tags=["invitations"])
 app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
 app.include_router(search_router, prefix="/api/search", tags=["search"])
+app.include_router(relationships_router, prefix="/api/relationships", tags=["relationships"])
 
 # Serve uploaded files
 UPLOAD_DIR = Path("/tmp/echon_uploads")

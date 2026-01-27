@@ -675,3 +675,95 @@ export const fileApi = {
     return response.data;
   },
 };
+
+// --- RELATIONSHIPS & FAMILY TREE ---
+
+export interface Relationship {
+  id: string;
+  space_id: string;
+  person_a_id: string;
+  person_b_id: string;
+  relationship_type: string;
+  rel_metadata?: Record<string, any>;
+  confidence_level: string;
+  created_by: string;
+  created_at: string;
+  person_a_name?: string;
+  person_b_name?: string;
+}
+
+export interface FamilyTreeNode {
+  id: string;
+  name: string;
+  profile_photo_url?: string;
+  birth_date?: string;
+  death_date?: string;
+  bio?: string;
+  relationships: Array<{
+    type: string;
+    to_person_id: string;
+    confidence: string;
+  }>;
+}
+
+export interface FamilyTree {
+  nodes: FamilyTreeNode[];
+  edges: Relationship[];
+  root_person_id?: string;
+}
+
+export interface RelationshipCalculation {
+  person_a_id: string;
+  person_b_id: string;
+  relationship: string;
+  path: string[];
+  degree: number;
+}
+
+export const relationshipsApi = {
+  // Create relationship
+  create: async (data: {
+    space_id: string;
+    person_a_id: string;
+    person_b_id: string;
+    relationship_type: string;
+    rel_metadata?: Record<string, any>;
+    confidence_level?: string;
+  }): Promise<Relationship> => {
+    const response = await api.post('/api/relationships', data);
+    return response.data;
+  },
+
+  // Get all relationships in space
+  getAll: async (spaceId: string): Promise<Relationship[]> => {
+    const response = await api.get(`/api/relationships/${spaceId}`);
+    return response.data;
+  },
+
+  // Get family tree
+  getTree: async (spaceId: string, rootPersonId?: string): Promise<FamilyTree> => {
+    const response = await api.get(`/api/relationships/${spaceId}/tree`, {
+      params: rootPersonId ? { root_person_id: rootPersonId } : {},
+    });
+    return response.data;
+  },
+
+  // Calculate relationship between two people
+  calculate: async (
+    spaceId: string,
+    personAId: string,
+    personBId: string
+  ): Promise<RelationshipCalculation> => {
+    const response = await api.get(
+      `/api/relationships/${spaceId}/calculate/${personAId}/${personBId}`
+    );
+    return response.data;
+  },
+
+  // Delete relationship
+  delete: async (relationshipId: string, spaceId: string): Promise<void> => {
+    await api.delete(`/api/relationships/${relationshipId}`, {
+      params: { space_id: spaceId },
+    });
+  },
+};

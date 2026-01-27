@@ -56,6 +56,9 @@ redis_data/
 logs/
 echon_access_data.txt
 echon_db_backup.sql
+echon_claude_view.md
+echon_create_relationships_manually.sql
+echon_json_test_relationships.txt
 
 # Uploads (local development)
 uploads/

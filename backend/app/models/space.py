@@ -50,6 +50,7 @@ class FamilySpace(Base):
     members = relationship("SpaceMember", back_populates="space", cascade="all, delete-orphan")
     posts = relationship("Post", back_populates="space", cascade="all, delete-orphan")
     invitations = relationship("Invitation", back_populates="space", cascade="all, delete-orphan")
+    relationships = relationship("Relationship", back_populates="space", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<FamilySpace {self.name}>"

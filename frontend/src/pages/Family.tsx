@@ -87,12 +87,20 @@ export default function Family() {
           <h1 className="text-2xl font-serif text-echon-cream">
             👥 Family
           </h1>
-          <button
-            onClick={() => setShowInvite(true)}
-            className="echon-btn-secondary"
-          >
-            + Invite
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => navigate('/space/family/tree')}
+              className="echon-btn-secondary flex items-center gap-2"
+            >
+              🌳 Tree
+            </button>
+            <button
+              onClick={() => setShowInvite(true)}
+              className="echon-btn-secondary"
+            >
+              + Invite
+            </button>
+          </div>
         </div>
       </div>
 

@@ -1,0 +1,17 @@
+parent          (not "father" or "mother")
+child           (not "son" or "daughter")
+sibling         (not "brother" or "sister")
+spouse          (not "husband" or "wife")
+grandparent
+grandchild
+aunt
+uncle
+niece
+nephew
+cousin
+in_law
+step_parent
+step_child
+half_sibling
+adopted_child
+adopted_parent

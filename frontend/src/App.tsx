@@ -15,6 +15,7 @@ import Space from './pages/Space';
 import Memories from './pages/Memories';
 import Family from './pages/Family';
 import MemberProfile from './pages/MemberProfile';
+import FamilyTree from './pages/FamilyTree';
 import Stories from './pages/Stories';
 import Now from './pages/Now';
 import Chat from './pages/Chat';
@@ -77,6 +78,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Family />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/space/family/tree"
+          element={
+            <ProtectedRoute>
+              <FamilyTree />
             </ProtectedRoute>
           }
         />
