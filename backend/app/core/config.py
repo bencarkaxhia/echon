@@ -16,18 +16,18 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # Security
-    SECRET_KEY: str = "54034a0e067c13d4d797fce2d3fd8b20136de68b8dc3f97c55f944a797dc62c7"    # created via "openssl rand -hex 32"
+    SECRET_KEY: str = "54034a0e067c13d4d797fce2d3fd8b20136de68b8dc3f97c55f944a797dc62c7"                                        # created via "openssl rand -hex 32"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
     
     # Database
-    # DATABASE_URL: str = "postgresql://echon:echon_dev_password@localhost:5432/echon_db"     # local postgres deployment
-    DATABASE_URL: str = "postgresql://postgres:LPdllWRHtuEWJgHvrDUKYABYXDlfuaBc@centerbeam.proxy.rlwy.net:35430/railway"      # Railway Postgres Deployment
+    DATABASE_URL: str = "postgresql://echon:echon_dev_password@localhost:5432/echon_db"                                         # local postgres deployment
+    # DATABASE_URL: str = "postgresql://postgres:BRMLFuKuKXiTuBerHEJqJpRRZYZFxNUR@switchyard.proxy.rlwy.net:11156/railway"      # Railway Postgres Deployment
     
     # Redis
-    # REDIS_URL: str = "redis://localhost:6379/0"     # local redis deployment
-    REDIS_URL: str = "redis://default:qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE@redis.railway.internal:6379"       # Railway Redis Deployment
-    # REDIS_PASSWORD: Optional[str] = "qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE"                                    # Railway Redis Password
+    REDIS_URL: str = "redis://localhost:6379/0"     # local redis deployment
+    # REDIS_URL: str = "redis://default:qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE@redis.railway.internal:6379"                           # Railway Redis Deployment
+    # REDIS_PASSWORD: Optional[str] = "qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE"                                                        # Railway Redis Password
     
     # CORS (Frontend URLs)
     CORS_ORIGINS: list = [
