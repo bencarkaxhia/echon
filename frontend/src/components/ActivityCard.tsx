@@ -88,7 +88,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         <div className="w-10 h-10 rounded-full bg-echon-shadow border border-echon-wood flex items-center justify-center flex-shrink-0">
           {activity.user_photo ? (
             <img
-              src={activity.user_photo}
+              src={`http://localhost:8000${activity.user_photo}`}
               alt={activity.user_name}
               className="w-full h-full rounded-full object-cover"
             />

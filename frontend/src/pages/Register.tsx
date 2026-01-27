@@ -51,8 +51,8 @@ export default function Register() {
       setAuthToken(response.access_token);
       setCurrentUser(response.user);
 
-      // Redirect to create family space
-      navigate('/create-space');
+      // Redirect to space selector (can create or join)
+      navigate('/select-space');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Registration failed. Please try again.');
     } finally {

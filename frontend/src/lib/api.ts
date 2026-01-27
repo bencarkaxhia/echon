@@ -267,6 +267,30 @@ export const authApi = {
     const response = await api.get('/api/auth/me');
     return response.data;
   },
+
+  uploadProfilePhoto: async (formData: FormData): Promise<{
+    profile_photo_url: string;
+    message: string;
+  }> => {
+    const response = await api.post('/api/auth/upload-photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
+  },
+
+  updatePassword: async (currentPassword: string, newPassword: string): Promise<{
+    message: string;
+  }> => {
+    const response = await api.post('/api/auth/update-password', null, {
+      params: {
+        current_password: currentPassword,
+        new_password: newPassword,
+      },
+    });
+    return response.data;
+  },
 };
 
 // --- FAMILY SPACE ENDPOINTS ---
@@ -289,6 +313,18 @@ export const spaceApi = {
 
   getSpace: async (spaceId: string): Promise<FamilySpace> => {
     const response = await api.get(`/api/spaces/${spaceId}`);
+    return response.data;
+  },
+
+  uploadEmblem: async (spaceId: string, formData: FormData): Promise<{
+    emblem_url: string;
+    message: string;
+  }> => {
+    const response = await api.post(`/api/spaces/${spaceId}/upload-emblem`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
     return response.data;
   },
 };
@@ -354,6 +390,31 @@ export const postsApi = {
       reaction_type: reactionType,
     });
     return response.data;
+  },
+
+  updatePost: async (
+    postId: string,
+    spaceId: string,
+    updates: {
+      caption?: string;
+      location?: string;
+      event_date?: string;
+      tags?: string;
+    }
+  ): Promise<Post> => {
+    const response = await api.patch(`/api/posts/${postId}`, null, {
+      params: {
+        space_id: spaceId,
+        ...updates,
+      },
+    });
+    return response.data;
+  },
+
+  deletePost: async (postId: string, spaceId: string): Promise<void> => {
+    await api.delete(`/api/posts/${postId}`, {
+      params: { space_id: spaceId },
+    });
   },
 };
 
@@ -462,5 +523,133 @@ export const activityApi = {
   getSpaceStats: async (spaceId: string): Promise<SpaceStats> => {
     const response = await api.get(`/api/activity/stats/${spaceId}`);
     return response.data;
+  },
+};
+
+// --- INVITATIONS ENDPOINTS ---
+
+export const invitationsApi = {
+  createInvitationCode: async (
+    spaceId: string,
+    inviteeName: string,
+    inviteeContact: string,
+    relationship?: string,
+    message?: string
+  ): Promise<{
+    invitation_code: string;
+    invitee_name: string;
+    expires_at: string;
+    space_name: string;
+    message: string;
+  }> => {
+    const response = await api.post('/api/invitations/create-code', null, {
+      params: {
+        space_id: spaceId,
+        invitee_name: inviteeName,
+        invitee_contact: inviteeContact,
+        relationship,
+        message,
+      },
+    });
+    return response.data;
+  },
+
+  joinWithCode: async (invitationCode: string): Promise<{
+    status: string;
+    message: string;
+    space_name: string;
+    space_id: string;
+  }> => {
+    const response = await api.post('/api/invitations/join-with-code', null, {
+      params: { invitation_code: invitationCode },
+    });
+    return response.data;
+  },
+
+  getPendingApprovals: async (spaceId: string): Promise<{
+    pending_approvals: Array<{
+      membership_id: string;
+      user_id: string;
+      user_name: string;
+      user_email?: string;
+      user_phone?: string;
+      relationship?: string;
+      joined_at: string;
+    }>;
+    total: number;
+  }> => {
+    const response = await api.get(`/api/invitations/pending-approvals/${spaceId}`);
+    return response.data;
+  },
+
+  approveMembership: async (
+    membershipId: string,
+    spaceId: string,
+    approve: boolean = true
+  ): Promise<{
+    status: string;
+    message: string;
+    user_name?: string;
+  }> => {
+    const response = await api.post(`/api/invitations/approve/${membershipId}`, null, {
+      params: {
+        space_id: spaceId,
+        approve,
+      },
+    });
+    return response.data;
+  },
+
+  getMySpaces: async (): Promise<{
+    spaces: Array<{
+      space_id: string;
+      space_name: string;
+      role: string;
+      joined_at: string;
+      emblem_url?: string;
+    }>;
+    total: number;
+  }> => {
+    const response = await api.get('/api/invitations/my-spaces');
+    return response.data;
+  },
+};
+
+// --- CHAT ENDPOINTS ---
+
+export const chatApi = {
+  sendMessage: async (spaceId: string, content: string): Promise<any> => {
+    const response = await api.post('/api/chat/send', {
+      space_id: spaceId,
+      content,
+    });
+    return response.data;
+  },
+
+  getMessages: async (spaceId: string, page: number = 1, perPage: number = 100): Promise<{
+    messages: Array<{
+      id: string;
+      space_id: string;
+      user_id: string;
+      content: string;
+      created_at: string;
+      user_name: string;
+      user_photo?: string;
+    }>;
+    total: number;
+    page: number;
+    per_page: number;
+    has_more: boolean;
+  }> => {
+    const response = await api.get(`/api/chat/messages/${spaceId}`, {
+      params: { page, per_page: perPage },
+    });
+    return response.data;
+  },
+
+  deleteMessage: async (messageId: string, spaceId: string): Promise<void> => {
+    await api.delete(`/api/chat/${messageId}`, {
+      params: { space_id: spaceId },
+    });
   },
 };

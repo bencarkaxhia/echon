@@ -109,7 +109,12 @@ export default function Now() {
           <h1 className="text-2xl font-serif text-echon-cream">
             💬 Now
           </h1>
-          <div className="w-20"></div>
+          <button
+            onClick={() => navigate('/space/chat')}
+            className="echon-btn-secondary"
+          >
+            💬 Chat
+          </button>
         </div>
       </div>
 

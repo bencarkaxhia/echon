@@ -6,17 +6,26 @@
  */
 
 import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { familyApi, MemberProfile } from '../lib/api';
-import { getCurrentSpace } from '../lib/auth';
+import { familyApi, MemberProfile, invitationsApi } from '../lib/api';
+import { getCurrentSpace, getCurrentUser } from '../lib/auth';
 import MemberCard from '../components/MemberCard';
+import InviteMember from '../components/InviteMember';
+import PendingApprovals from '../components/PendingApprovals';
 
 export default function Family() {
   const navigate = useNavigate();
   const [members, setMembers] = useState<MemberProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ total: 0, founders: 0, elders: 0, regular_members: 0 });
+  const [showInvite, setShowInvite] = useState(false);
+  const [showPending, setShowPending] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+  const currentUser = getCurrentUser();
+  
+  // Check if current user is a founder
+  const isFounder = members.find(m => m.id === currentUser?.id)?.role === 'founder';
 
   useEffect(() => {
     loadMembers();
@@ -38,6 +47,17 @@ export default function Family() {
         elders: data.elders,
         regular_members: data.regular_members,
       });
+      
+      // Load pending count for founders
+      const userMember = data.members.find((m: MemberProfile) => m.id === currentUser?.id);
+      if (userMember?.role === 'founder') {
+        try {
+          const pendingData = await invitationsApi.getPendingApprovals(spaceId);
+          setPendingCount(pendingData.total);
+        } catch (err) {
+          console.error('Failed to load pending approvals:', err);
+        }
+      }
     } catch (error) {
       console.error('Failed to load members:', error);
     } finally {
@@ -67,14 +87,19 @@ export default function Family() {
           <h1 className="text-2xl font-serif text-echon-cream">
             👥 Family
           </h1>
-          <div className="w-20"></div> {/* Spacer for centering */}
+          <button
+            onClick={() => setShowInvite(true)}
+            className="echon-btn-secondary"
+          >
+            + Invite
+          </button>
         </div>
       </div>
 
       {/* Stats Bar */}
       <div className="bg-echon-shadow/50 border-b border-echon-wood">
         <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex gap-8 justify-center text-center">
+          <div className="flex gap-8 justify-center items-center text-center">
             <div>
               <p className="text-2xl font-bold text-echon-cream">{stats.total}</p>
               <p className="text-sm text-echon-cream-dark">Total Members</p>
@@ -91,6 +116,18 @@ export default function Family() {
               <p className="text-2xl font-bold text-echon-cream">{stats.regular_members}</p>
               <p className="text-sm text-echon-cream-dark">Members</p>
             </div>
+            
+            {/* Pending Approvals Button (Founders Only) */}
+            {isFounder && pendingCount > 0 && (
+              <div>
+                <button
+                  onClick={() => setShowPending(true)}
+                  className="relative px-4 py-2 bg-echon-candle text-echon-black font-semibold rounded-lg hover:bg-echon-gold transition-colors"
+                >
+                  ⏳ {pendingCount} Pending
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -124,6 +161,25 @@ export default function Family() {
           </div>
         )}
       </div>
+
+      {/* Invite Modal */}
+      <AnimatePresence>
+        {showInvite && (
+          <InviteMember onClose={() => setShowInvite(false)} />
+        )}
+      </AnimatePresence>
+
+      {/* Pending Approvals Modal */}
+      <AnimatePresence>
+        {showPending && (
+          <PendingApprovals
+            onClose={() => setShowPending(false)}
+            onApproved={() => {
+              loadMembers(); // Refresh member list
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

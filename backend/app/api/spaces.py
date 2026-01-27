@@ -142,3 +142,62 @@ def get_space(
         )
     
     return SpaceResponse.model_validate(space)
+
+
+# --- UPDATE SPACE EMBLEM ---
+
+from fastapi import UploadFile, File
+from ..core.storage import save_image, get_file_url, FileUploadError
+
+@router.post("/{space_id}/upload-emblem", status_code=status.HTTP_200_OK)
+async def upload_space_emblem(
+    space_id: str,
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload emblem/logo for family space
+    Only founders can upload
+    """
+    # Get space
+    space = db.query(FamilySpace).filter(FamilySpace.id == space_id).first()
+    if not space:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Space not found"
+        )
+    
+    # Check if user is founder
+    membership = db.query(SpaceMember).filter(
+        SpaceMember.user_id == current_user.id,
+        SpaceMember.space_id == space_id,
+        SpaceMember.is_active == True
+    ).first()
+    
+    if not membership or membership.role != "founder":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only founders can upload space emblem"
+        )
+    
+    try:
+        # Save image
+        result = await save_image(file, subfolder="emblems", create_thumbnail=True)
+        file_url = get_file_url(result["original"])
+        
+        # Update space
+        space.emblem_url = file_url
+        db.commit()
+        db.refresh(space)
+        
+        return {
+            "emblem_url": file_url,
+            "message": "Space emblem updated successfully"
+        }
+    
+    except FileUploadError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

@@ -51,7 +51,7 @@ export default function MemberCard({ member }: MemberCardProps) {
         <div className="w-24 h-24 rounded-full bg-echon-shadow border-2 border-echon-gold flex items-center justify-center overflow-hidden">
           {member.profile_photo_url ? (
             <img
-              src={member.profile_photo_url}
+              src={`http://localhost:8000${member.profile_photo_url}`}
               alt={member.name}
               className="w-full h-full object-cover"
             />

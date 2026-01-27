@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { postsApi, Post } from '../lib/api';
-import { getCurrentSpace } from '../lib/auth';
+import { getCurrentSpace, getCurrentUser } from '../lib/auth';
 import MemoryCard from '../components/MemoryCard';
 import UploadMemory from '../components/UploadMemory';
 import { useNavigate } from 'react-router-dom';
@@ -21,6 +21,8 @@ export default function Memories() {
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const currentUser = getCurrentUser();
 
   const loadPosts = async (pageNum: number = 1) => {
     try {
@@ -54,6 +56,47 @@ export default function Memories() {
   const handleUploadSuccess = () => {
     setShowUpload(false);
     loadPosts(1); // Reload first page
+  };
+
+  const handleEdit = (postId: string) => {
+    const post = posts.find(p => p.id === postId);
+    if (post) {
+      setEditingPost(post);
+    }
+  };
+
+  const handleDelete = async (postId: string) => {
+    try {
+      const spaceId = getCurrentSpace();
+      if (!spaceId) return;
+
+      await postsApi.deletePost(postId, spaceId);
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (error) {
+      console.error('Failed to delete post:', error);
+      alert('Failed to delete memory');
+    }
+  };
+
+  const handleUpdatePost = async (updates: {
+    caption?: string;
+    location?: string;
+    event_date?: string;
+    tags?: string;
+  }) => {
+    if (!editingPost) return;
+
+    try {
+      const spaceId = getCurrentSpace();
+      if (!spaceId) return;
+
+      await postsApi.updatePost(editingPost.id, spaceId, updates);
+      setEditingPost(null);
+      loadPosts(1); // Reload
+    } catch (error) {
+      console.error('Failed to update post:', error);
+      alert('Failed to update memory');
+    }
   };
 
   if (loading) {
@@ -118,6 +161,9 @@ export default function Memories() {
                 key={post.id}
                 post={post}
                 onImageClick={setLightboxImage}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                canEdit={currentUser?.id === post.user_id}
               />
             ))}
 
@@ -171,6 +217,94 @@ export default function Memories() {
             >
               ✕
             </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Edit Modal */}
+      <AnimatePresence>
+        {editingPost && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4"
+            onClick={() => setEditingPost(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0.9 }}
+              onClick={(e) => e.stopPropagation()}
+              className="echon-card max-w-2xl w-full"
+            >
+              <h2 className="text-2xl font-serif text-echon-cream mb-6">
+                Edit Memory
+              </h2>
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const formData = new FormData(e.currentTarget);
+                  handleUpdatePost({
+                    caption: formData.get('caption') as string,
+                    location: formData.get('location') as string,
+                    event_date: formData.get('event_date') as string,
+                    tags: formData.get('tags') as string,
+                  });
+                }}
+                className="space-y-4"
+              >
+                <div>
+                  <label className="block text-echon-cream text-sm mb-2">Caption</label>
+                  <textarea
+                    name="caption"
+                    defaultValue={editingPost.content || ''}
+                    className="echon-input min-h-[100px]"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-echon-cream text-sm mb-2">Date</label>
+                    <input
+                      type="date"
+                      name="event_date"
+                      defaultValue={editingPost.event_date || ''}
+                      className="echon-input"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-echon-cream text-sm mb-2">Location</label>
+                    <input
+                      type="text"
+                      name="location"
+                      defaultValue={editingPost.location || ''}
+                      className="echon-input"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-echon-cream text-sm mb-2">Tags (comma-separated)</label>
+                  <input
+                    type="text"
+                    name="tags"
+                    defaultValue={editingPost.tags?.join(', ') || ''}
+                    className="echon-input"
+                  />
+                </div>
+                <div className="flex gap-4 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => setEditingPost(null)}
+                    className="echon-btn-secondary flex-1"
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="echon-btn flex-1">
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

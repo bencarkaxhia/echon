@@ -59,6 +59,8 @@ from .api.posts import router as posts_router
 from .api.family import router as family_router
 from .api.stories import router as stories_router
 from .api.activity import router as activity_router
+from .api.invitations import router as invitations_router
+from .api.chat import router as chat_router
 
 app.include_router(auth_router, prefix="/api/auth", tags=["auth"])
 app.include_router(spaces_router, prefix="/api/spaces", tags=["spaces"])
@@ -66,6 +68,8 @@ app.include_router(posts_router, prefix="/api/posts", tags=["posts"])
 app.include_router(family_router, prefix="/api/family", tags=["family"])
 app.include_router(stories_router, prefix="/api/stories", tags=["stories"])
 app.include_router(activity_router, prefix="/api/activity", tags=["activity"])
+app.include_router(invitations_router, prefix="/api/invitations", tags=["invitations"])
+app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
 
 # Serve uploaded files
 UPLOAD_DIR = Path("/tmp/echon_uploads")

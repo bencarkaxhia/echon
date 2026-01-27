@@ -76,6 +76,15 @@ export default function CreateSpace() {
         className="relative z-10 w-full max-w-2xl"
       >
         <div className="echon-card">
+          {/* Close/Cancel Button */}
+          <button
+            onClick={() => navigate('/select-space')}
+            className="absolute top-4 right-4 text-echon-cream-dark hover:text-echon-cream transition-colors text-2xl"
+            title="Cancel"
+          >
+            ✕
+          </button>
+
           {/* Header */}
           <div className="text-center mb-8">
             <motion.div
@@ -147,13 +156,22 @@ export default function CreateSpace() {
                   </p>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="echon-btn w-full mt-8"
-                >
-                  Continue
-                </button>
+                <div className="flex gap-4 mt-8">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/select-space')}
+                    className="echon-btn-secondary flex-1"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={nextStep}
+                    className="echon-btn flex-1"
+                  >
+                    Continue
+                  </button>
+                </div>
               </motion.div>
             )}
 

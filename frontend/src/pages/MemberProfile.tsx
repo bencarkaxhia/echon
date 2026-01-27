@@ -5,11 +5,12 @@
  * PATH: echon/frontend/src/pages/MemberProfile.tsx
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { familyApi, MemberProfile as MemberProfileType } from '../lib/api';
+import { motion, AnimatePresence } from 'framer-motion';
+import { familyApi, MemberProfile as MemberProfileType, authApi } from '../lib/api';
 import { getCurrentSpace, getCurrentUser } from '../lib/auth';
+import ChangePassword from '../components/ChangePassword';
 
 export default function MemberProfile() {
   const { memberId } = useParams<{ memberId: string }>();
@@ -17,6 +18,10 @@ export default function MemberProfile() {
   const [member, setMember] = useState<MemberProfileType | null>(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [currentUserRole, setCurrentUserRole] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const currentUser = getCurrentUser();
 
   const [formData, setFormData] = useState({
@@ -42,6 +47,13 @@ export default function MemberProfile() {
 
       const data = await familyApi.getMemberProfile(memberId, spaceId);
       setMember(data);
+      
+      // Also load current user's role in this space
+      const allMembers = await familyApi.getSpaceMembers(spaceId);
+      const currentMember = allMembers.members.find((m: any) => m.id === currentUser?.id);
+      if (currentMember) {
+        setCurrentUserRole(currentMember.role);
+      }
       
       // Initialize form
       setFormData({
@@ -81,6 +93,33 @@ export default function MemberProfile() {
     }
   };
 
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please upload an image file');
+      return;
+    }
+
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      // const response = await authApi.uploadProfilePhoto(formData);   // response not used, so const response not needed
+      await authApi.uploadProfilePhoto(formData);
+      
+      // Reload member data to show new photo
+      loadMember();
+    } catch (error: any) {
+      console.error('Failed to upload photo:', error);
+      alert(error.response?.data?.detail || 'Failed to upload photo');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-echon-black flex items-center justify-center">
@@ -97,7 +136,8 @@ export default function MemberProfile() {
     );
   }
 
-  const canEdit = currentUser?.id === member.id || member.role === 'founder';
+  // Permission: Can edit own profile OR current user is a founder
+  const canEdit = currentUser?.id === member.id || currentUserRole === 'founder';
 
   return (
     <div className="min-h-screen bg-echon-black">
@@ -129,11 +169,11 @@ export default function MemberProfile() {
           className="echon-card"
         >
           {/* Profile Photo */}
-          <div className="flex justify-center mb-6">
-            <div className="w-32 h-32 rounded-full bg-echon-shadow border-4 border-echon-gold flex items-center justify-center overflow-hidden">
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative w-32 h-32 rounded-full bg-echon-shadow border-4 border-echon-gold flex items-center justify-center overflow-hidden">
               {member.profile_photo_url ? (
                 <img
-                  src={member.profile_photo_url}
+                  src={`http://localhost:8000${member.profile_photo_url}`}
                   alt={member.name}
                   className="w-full h-full object-cover"
                 />
@@ -142,7 +182,24 @@ export default function MemberProfile() {
                   {member.name.charAt(0)}
                 </span>
               )}
+              {canEdit && (
+                <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                  onClick={() => fileInputRef.current?.click()}
+                >
+                  <span className="text-white text-sm">
+                    {uploading ? 'Uploading...' : 'Change Photo'}
+                  </span>
+                </div>
+              )}
             </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoUpload}
+              className="hidden"
+              disabled={uploading}
+            />
           </div>
 
           {editing ? (
@@ -313,10 +370,29 @@ export default function MemberProfile() {
                   day: 'numeric'
                 })}
               </div>
+
+              {/* Change Password Button (own profile only) */}
+              {canEdit && (
+                <div className="text-center pt-4 border-t border-echon-wood">
+                  <button
+                    onClick={() => setShowChangePassword(true)}
+                    className="text-echon-cream-dark hover:text-echon-cream text-sm transition-colors"
+                  >
+                    🔐 Change Password
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </motion.div>
       </div>
+
+      {/* Change Password Modal */}
+      <AnimatePresence>
+        {showChangePassword && (
+          <ChangePassword onClose={() => setShowChangePassword(false)} />
+        )}
+      </AnimatePresence>
     </div>
   );
 }

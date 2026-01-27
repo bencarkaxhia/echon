@@ -3,13 +3,14 @@ Echon Authentication API
 Register, Login, Get Current User
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from datetime import datetime
 
 from ..core.database import get_db
 from ..core.security import verify_password, get_password_hash, create_access_token, decode_access_token
+from ..core.storage import save_image, get_file_url, FileUploadError
 from ..models.user import User
 from ..schemas.auth import UserRegister, UserLogin, LoginResponse, UserResponse
 
@@ -165,3 +166,42 @@ def get_me(current_user: User = Depends(get_current_user)):
 # --- LOGOUT (Client-side) ---
 # Note: JWT logout is handled on the frontend by deleting the token
 # No backend endpoint needed (tokens expire automatically)
+
+
+# --- UPLOAD PROFILE PHOTO ---
+
+@router.post("/upload-photo", status_code=status.HTTP_200_OK)
+async def upload_profile_photo(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Upload profile photo for current user
+    """
+    try:
+        # Save image
+        result = await save_image(file, subfolder="profiles", create_thumbnail=True)
+        file_url = get_file_url(result["original"])
+        
+        # Update user
+        current_user.profile_photo_url = file_url
+        current_user.last_active = datetime.utcnow()
+        db.commit()
+        db.refresh(current_user)
+        
+        return {
+            "profile_photo_url": file_url,
+            "message": "Profile photo updated successfully"
+        }
+    
+    except FileUploadError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Upload failed: {str(e)}"
+        )

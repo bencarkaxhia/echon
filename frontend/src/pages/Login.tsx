@@ -36,9 +36,8 @@ export default function Login() {
       setAuthToken(response.access_token);
       setCurrentUser(response.user);
 
-      // Check if user has a space already (we'll add this logic later)
-      // For now, go to create-space
-      navigate('/create-space');
+      // Go to space selector to choose/create/join space
+      navigate('/select-space');
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Login failed. Please check your credentials.');
     } finally {

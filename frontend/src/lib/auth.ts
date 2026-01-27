@@ -50,6 +50,7 @@ export const isAuthenticated = (): boolean => {
 export const logout = (): void => {
   removeAuthToken();
   removeCurrentUser();
+  removeCurrentSpace();
   window.location.href = '/';
 };
 

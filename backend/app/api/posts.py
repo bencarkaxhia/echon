@@ -394,3 +394,156 @@ def add_reaction(
         )
     
     return response
+
+
+# --- UPDATE POST ---
+
+@router.patch("/{post_id}", response_model=PostResponse)
+def update_post(
+    post_id: str,
+    space_id: str,  # Query parameter
+    caption: Optional[str] = None,
+    location: Optional[str] = None,
+    event_date: Optional[str] = None,
+    tags: Optional[str] = None,  # Comma-separated
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update a post/memory
+    Only author or space founders can update
+    """
+    # Get post
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post not found"
+        )
+    
+    # Check permissions
+    membership = db.query(SpaceMember).filter(
+        SpaceMember.user_id == current_user.id,
+        SpaceMember.space_id == space_id
+    ).first()
+    
+    is_author = str(post.author_id) == str(current_user.id)
+    is_founder = membership and membership.role == "founder"
+    
+    if not (is_author or is_founder):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only edit your own posts"
+        )
+    
+    # Update fields
+    if caption is not None:
+        post.content = caption
+    
+    if location is not None:
+        post.location_of_memory = location
+    
+    if event_date is not None:
+        try:
+            dt = datetime.fromisoformat(event_date.replace('Z', '+00:00'))
+            post.date_of_memory = dt.date()
+        except ValueError:
+            pass
+    
+    # Update tags
+    if tags is not None:
+        # Delete old tags
+        db.query(PostTag).filter(PostTag.post_id == post_id).delete()
+        
+        # Add new tags
+        if tags.strip():
+            tag_list = [t.strip() for t in tags.split(',') if t.strip()]
+            for tag_name in tag_list:
+                new_tag = PostTag(post_id=post_id, tagged_name=tag_name)
+                db.add(new_tag)
+    
+    post.updated_at = datetime.utcnow()
+    db.commit()
+    db.refresh(post)
+    
+    # Get author
+    author = db.query(User).filter(User.id == post.author_id).first()
+    
+    # Get tags
+    post_tags = db.query(PostTag).filter(PostTag.post_id == post_id).all()
+    tag_names = [t.tagged_name for t in post_tags if t.tagged_name and isinstance(t.tagged_name, str)]
+    
+    # Get comments
+    comments = db.query(Comment).filter(
+        Comment.post_id == post_id,
+        Comment.is_active == True
+    ).all()
+    
+    # Get reactions
+    reactions = db.query(Reaction).filter(Reaction.post_id == post_id).all()
+    
+    # Build response
+    return PostResponse(
+        id=str(post.id),
+        space_id=str(post.space_id),
+        user_id=str(post.author_id),
+        content=post.content,
+        media_urls=[post.file_url] if post.file_url else None,
+        media_type=post.type,
+        event_date=post.date_of_memory.isoformat() if post.date_of_memory else None,
+        location=post.location_of_memory,
+        privacy_level=post.privacy_level,
+        created_at=post.created_at,
+        updated_at=post.updated_at,
+        user={
+            "id": str(author.id),
+            "name": author.name,
+            "profile_photo_url": author.profile_photo_url
+        } if author else None,
+        tags=tag_names,
+        comment_count=len(comments),
+        reaction_count=len(reactions)
+    )
+
+
+# --- DELETE POST ---
+
+@router.delete("/{post_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_post(
+    post_id: str,
+    space_id: str,  # Query parameter
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a post/memory (soft delete)
+    Only author or space founders can delete
+    """
+    # Get post
+    post = db.query(Post).filter(Post.id == post_id).first()
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Post not found"
+        )
+    
+    # Check permissions
+    membership = db.query(SpaceMember).filter(
+        SpaceMember.user_id == current_user.id,
+        SpaceMember.space_id == space_id
+    ).first()
+    
+    is_author = str(post.author_id) == str(current_user.id)
+    is_founder = membership and membership.role == "founder"
+    
+    if not (is_author or is_founder):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You can only delete your own posts"
+        )
+    
+    # Soft delete
+    post.is_active = False
+    db.commit()
+    
+    return None

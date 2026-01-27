@@ -13,15 +13,19 @@ import { postsApi } from '../lib/api';
 interface MemoryCardProps {
   post: Post;
   onImageClick: (url: string) => void;
+  onEdit?: (postId: string) => void;
+  onDelete?: (postId: string) => void;
+  canEdit?: boolean;
 }
 
-export default function MemoryCard({ post, onImageClick }: MemoryCardProps) {
+export default function MemoryCard({ post, onImageClick, onEdit, onDelete, canEdit }: MemoryCardProps) {
   const [showComments, setShowComments] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [commenting, setCommenting] = useState(false);
   const [localCommentCount, setLocalCommentCount] = useState(post.comment_count);
   const [localReactionCount, setLocalReactionCount] = useState(post.reaction_count);
   const [hasReacted, setHasReacted] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +78,7 @@ export default function MemoryCard({ post, onImageClick }: MemoryCardProps) {
             {post.user?.name?.charAt(0) || '?'}
           </span>
         </div>
-        <div>
+        <div className="flex-1">
           <p className="text-echon-cream font-semibold">
             {post.user?.name || 'Unknown'}
           </p>
@@ -84,6 +88,42 @@ export default function MemoryCard({ post, onImageClick }: MemoryCardProps) {
             </p>
           )}
         </div>
+        
+        {/* Edit/Delete Menu */}
+        {canEdit && (
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="text-echon-cream-dark hover:text-echon-cream transition-colors p-2"
+            >
+              ⋮
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 mt-2 w-40 bg-echon-shadow border border-echon-wood rounded-lg shadow-lg z-10">
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    onEdit?.(post.id);
+                  }}
+                  className="w-full px-4 py-2 text-left text-echon-cream hover:bg-echon-wood transition-colors"
+                >
+                  ✏️ Edit
+                </button>
+                <button
+                  onClick={() => {
+                    setShowMenu(false);
+                    if (confirm('Delete this memory?')) {
+                      onDelete?.(post.id);
+                    }
+                  }}
+                  className="w-full px-4 py-2 text-left text-echon-candle hover:bg-echon-wood transition-colors"
+                >
+                  🗑️ Delete
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Media */}

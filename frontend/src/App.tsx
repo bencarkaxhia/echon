@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import SpaceSelector from './pages/SpaceSelector';
 import CreateSpace from './pages/CreateSpace';
 import Space from './pages/Space';
 import Memories from './pages/Memories';
@@ -16,6 +17,7 @@ import Family from './pages/Family';
 import MemberProfile from './pages/MemberProfile';
 import Stories from './pages/Stories';
 import Now from './pages/Now';
+import Chat from './pages/Chat';
 import ProtectedRoute from './components/ProtectedRoute';
 
 function App() {
@@ -28,6 +30,14 @@ function App() {
         <Route path="/login" element={<Login />} />
 
         {/* Protected routes (require authentication) */}
+        <Route
+          path="/select-space"
+          element={
+            <ProtectedRoute>
+              <SpaceSelector />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/create-space"
           element={
@@ -83,6 +93,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Now />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/space/chat"
+          element={
+            <ProtectedRoute>
+              <Chat />
             </ProtectedRoute>
           }
         />
