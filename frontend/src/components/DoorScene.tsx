@@ -26,7 +26,7 @@ const doors: Door[] = [
     emoji: '📸',
     description: 'Photos, documents, and moments preserved',
     route: '/space/memories',
-    position: 'top-[15%] left-[10%] md:left-[15%]',
+    position: 'top-[25%] left-[20%] md:left-[15%]',
   },
   {
     id: 'stories',
@@ -34,7 +34,7 @@ const doors: Door[] = [
     emoji: '🗣️',
     description: 'Voice recordings and oral histories',
     route: '/space/stories',
-    position: 'top-[15%] right-[10%] md:right-[15%]',
+    position: 'top-[25%] right-[20%] md:right-[15%]',
   },
   {
     id: 'family',
@@ -42,7 +42,7 @@ const doors: Door[] = [
     emoji: '👥',
     description: 'People, connections, and lineages',
     route: '/space/family',
-    position: 'bottom-[15%] left-[10%] md:left-[15%]',
+    position: 'bottom-[25%] left-[20%] md:left-[15%]',
   },
   {
     id: 'now',
@@ -50,7 +50,7 @@ const doors: Door[] = [
     emoji: '💬',
     description: 'Recent activity and conversations',
     route: '/space/now',
-    position: 'bottom-[15%] right-[10%] md:right-[15%]',
+    position: 'bottom-[25%] right-[20%] md:right-[15%]',
   },
 ];
 
