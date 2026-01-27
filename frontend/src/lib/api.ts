@@ -12,6 +12,15 @@ import axios from 'axios';
 // Base API URL
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
+// Helper to get full media URL
+export const getMediaUrl = (path: string): string => {
+  if (!path) return '';
+  // If path already has http, return as-is
+  if (path.startsWith('http')) return path;
+  // Otherwise prepend API base URL
+  return `${API_BASE_URL}${path.startsWith('/') ? path : `/${path}`}`;
+};
+
 // Create axios instance
 export const api = axios.create({
   baseURL: API_BASE_URL,
