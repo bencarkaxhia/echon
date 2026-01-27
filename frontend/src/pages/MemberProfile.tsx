@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { familyApi, MemberProfile as MemberProfileType, authApi } from '../lib/api';
 import { getCurrentSpace, getCurrentUser } from '../lib/auth';
 import ChangePassword from '../components/ChangePassword';
+import { getMediaUrl } from '../lib/api';
 
 export default function MemberProfile() {
   const { memberId } = useParams<{ memberId: string }>();
@@ -173,7 +174,7 @@ export default function MemberProfile() {
             <div className="relative w-32 h-32 rounded-full bg-echon-shadow border-4 border-echon-gold flex items-center justify-center overflow-hidden">
               {member.profile_photo_url ? (
                 <img
-                  src={`http://localhost:8000${member.profile_photo_url}`}
+                  src={getMediaUrl(member.profile_photo_url)}
                   alt={member.name}
                   className="w-full h-full object-cover"
                 />

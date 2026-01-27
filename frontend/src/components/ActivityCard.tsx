@@ -8,6 +8,7 @@
 import { motion } from 'framer-motion';
 import { ActivityItem } from '../lib/api';
 import { useNavigate } from 'react-router-dom';
+import { getMediaUrl } from '../lib/api';
 
 interface ActivityCardProps {
   activity: ActivityItem;
@@ -88,7 +89,7 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
         <div className="w-10 h-10 rounded-full bg-echon-shadow border border-echon-wood flex items-center justify-center flex-shrink-0">
           {activity.user_photo ? (
             <img
-              src={`http://localhost:8000${activity.user_photo}`}
+              src={getMediaUrl(activity.user_photo)}
               alt={activity.user_name}
               className="w-full h-full rounded-full object-cover"
             />
@@ -122,13 +123,13 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             <div className="mt-2">
               {activity.type === 'memory' ? (
                 <img
-                  src={`http://localhost:8000${activity.preview_url}`}
+                  src={getMediaUrl(activity.preview_url)}
                   alt="Preview"
                   className="w-full h-32 object-cover rounded"
                 />
               ) : activity.type === 'story' ? (
                 <audio
-                  src={`http://localhost:8000${activity.preview_url}`}
+                  src={getMediaUrl(activity.preview_url)}
                   controls
                   className="w-full h-10"
                 />

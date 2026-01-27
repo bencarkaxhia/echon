@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { relationshipsApi, FamilyTree } from '../lib/api';
 import { getCurrentSpace } from '../lib/auth';
 import { useNavigate } from 'react-router-dom';
+import { getMediaUrl } from '../lib/api';
 
 export default function FamilyTreePage() {
   const [tree, setTree] = useState<FamilyTree | null>(null);
@@ -137,7 +138,7 @@ export default function FamilyTreePage() {
               <div className="flex items-center gap-4 mb-4">
                 {node.profile_photo_url ? (
                   <img
-                    src={`http://localhost:8000${node.profile_photo_url}`}
+                    src={getMediaUrl(node.profile_photo_url)}
                     alt={node.name}
                     className="w-16 h-16 rounded-full object-cover"
                   />

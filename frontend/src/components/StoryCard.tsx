@@ -7,6 +7,7 @@
 
 import { motion } from 'framer-motion';
 import { Story } from '../lib/api';
+import { getMediaUrl } from '../lib/api';
 
 interface StoryCardProps {
   story: Story;
@@ -71,7 +72,7 @@ export default function StoryCard({ story, onDelete, canDelete }: StoryCardProps
 
       {/* Audio Player */}
       <audio
-        src={`http://localhost:8000${story.audio_url}`}
+        src={getMediaUrl(story.audio_url)}
         controls
         className="w-full mb-4"
       />

@@ -9,6 +9,7 @@ import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { getCurrentSpace } from '../lib/auth';
 import { spaceApi } from '../lib/api';
+import { getMediaUrl } from '../lib/api';
 
 interface RotatingSphereProps {
   familyName: string;
@@ -141,7 +142,7 @@ export default function RotatingSphere({ familyName, emblemUrl, onEmblemUpdate, 
           {currentEmblem ? (
             <div className="w-full h-full rounded-full overflow-hidden border-4 border-echon-gold/50">
               <img
-                src={`http://localhost:8000${currentEmblem}`}
+                src={getMediaUrl(currentEmblem)}
                 alt={`${familyName} emblem`}
                 className="w-full h-full object-cover"
               />

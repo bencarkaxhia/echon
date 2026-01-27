@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { chatApi } from '../lib/api';
 import { getCurrentSpace, getCurrentUser } from '../lib/auth';
+import { getMediaUrl } from '../lib/api';
 
 interface ChatMessage {
   id: string;
@@ -158,7 +159,7 @@ export default function Chat() {
                   <div className="w-8 h-8 rounded-full bg-echon-shadow border border-echon-gold flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {msg.user_photo ? (
                       <img
-                        src={`http://localhost:8000${msg.user_photo}`}
+                        src={getMediaUrl(msg.user_photo)}
                         alt={msg.user_name}
                         className="w-full h-full object-cover"
                       />

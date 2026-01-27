@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { logout, getCurrentUser } from '../lib/auth';
 import RotatingSphere from './RotatingSphere';
+import { getMediaUrl } from '../lib/api';
 
 interface Door {
   id: string;
@@ -94,7 +95,7 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
           <div className="w-8 h-8 rounded-full bg-echon-shadow border border-echon-gold flex items-center justify-center overflow-hidden">
             {currentUser.profile_photo_url ? (
               <img
-                src={`http://localhost:8000${currentUser.profile_photo_url}`}
+                src={getMediaUrl(currentUser.profile_photo_url)}
                 alt={currentUser.name}
                 className="w-full h-full object-cover"
               />

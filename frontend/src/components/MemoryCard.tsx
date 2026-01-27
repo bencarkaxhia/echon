@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Post } from '../lib/api';
 import { postsApi } from '../lib/api';
+import { getMediaUrl } from '../lib/api';
 
 interface MemoryCardProps {
   post: Post;
@@ -135,7 +136,7 @@ export default function MemoryCard({ post, onImageClick, onEdit, onDelete, canEd
           'grid-cols-2'
         }`}>
           {post.media_urls.slice(0, 4).map((url, idx) => {
-            const fullUrl = `http://localhost:8000${url}`;
+            const fullUrl = getMediaUrl(url);
             const isVideo = url.includes('/videos/') || post.media_type === 'video';
             const isPdf = url.includes('.pdf') || post.media_type === 'pdf';
             
