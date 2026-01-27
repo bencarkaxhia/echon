@@ -22,6 +22,7 @@ export default function Memories() {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const [editingPost, setEditingPost] = useState<Post | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const currentUser = getCurrentUser();
 
   const loadPosts = async (pageNum: number = 1) => {
@@ -130,9 +131,27 @@ export default function Memories() {
         </div>
       </div>
 
+      {/* Search Bar */}
+      <div className="bg-echon-shadow/50 border-b border-echon-wood">
+        <div className="max-w-4xl mx-auto px-4 py-3">
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="🔍 Search memories by location, tags, or content..."
+            className="echon-input w-full"
+          />
+        </div>
+      </div>
+
       {/* Timeline */}
       <div className="max-w-4xl mx-auto px-4 py-8">
-        {posts.length === 0 ? (
+        {posts.filter(p => 
+          !searchQuery || 
+          p.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          p.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+        ).length === 0 ? (
           /* Empty State */
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -156,7 +175,12 @@ export default function Memories() {
         ) : (
           /* Memory Cards */
           <div className="space-y-6">
-            {posts.map((post) => (
+            {posts.filter(p => 
+              !searchQuery || 
+              p.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              p.location?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              p.tags?.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()))
+            ).map((post) => (
               <MemoryCard
                 key={post.id}
                 post={post}

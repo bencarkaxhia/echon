@@ -134,26 +134,57 @@ export default function MemoryCard({ post, onImageClick, onEdit, onDelete, canEd
           post.media_urls.length === 3 ? 'grid-cols-3' :
           'grid-cols-2'
         }`}>
-          {post.media_urls.slice(0, 4).map((url, idx) => (
-            <div
-              key={idx}
-              className="relative aspect-square rounded-lg overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-              onClick={() => onImageClick(`http://localhost:8000${url}`)}
-            >
-              <img
-                src={`http://localhost:8000${url}`}
-                alt={`Memory ${idx + 1}`}
-                className="w-full h-full object-cover"
-              />
-              {idx === 3 && post.media_urls!.length > 4 && (
-                <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                  <span className="text-white text-2xl font-bold">
-                    +{post.media_urls!.length - 4}
-                  </span>
-                </div>
-              )}
-            </div>
-          ))}
+          {post.media_urls.slice(0, 4).map((url, idx) => {
+            const fullUrl = `http://localhost:8000${url}`;
+            const isVideo = url.includes('/videos/') || post.media_type === 'video';
+            const isPdf = url.includes('.pdf') || post.media_type === 'pdf';
+            
+            return (
+              <div
+                key={idx}
+                className="relative aspect-square rounded-lg overflow-hidden bg-echon-shadow border border-echon-wood"
+              >
+                {isPdf ? (
+                  // PDF Display
+                  <a
+                    href={fullUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full h-full flex flex-col items-center justify-center hover:bg-echon-wood transition-colors"
+                  >
+                    <div className="text-6xl mb-2">📄</div>
+                    <p className="text-echon-cream text-sm px-2 text-center">PDF Document</p>
+                    <p className="text-echon-cream-dark text-xs mt-1">Click to open</p>
+                  </a>
+                ) : isVideo ? (
+                  // Video Player
+                  <video
+                    src={fullUrl}
+                    controls
+                    className="w-full h-full object-cover"
+                    preload="metadata"
+                  >
+                    Your browser does not support video playback.
+                  </video>
+                ) : (
+                  // Image
+                  <img
+                    src={fullUrl}
+                    alt={`Memory ${idx + 1}`}
+                    className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                    onClick={() => onImageClick(fullUrl)}
+                  />
+                )}
+                {idx === 3 && post.media_urls!.length > 4 && (
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center pointer-events-none">
+                    <span className="text-white text-2xl font-bold">
+                      +{post.media_urls!.length - 4}
+                    </span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 

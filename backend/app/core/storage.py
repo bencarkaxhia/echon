@@ -21,13 +21,16 @@ UPLOAD_DIR.mkdir(exist_ok=True)
 
 # Allowed file types
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"}
-ALLOWED_VIDEO_TYPES = {"video/mp4", "video/quicktime", "video/x-msvideo"}
-ALLOWED_AUDIO_TYPES = {"audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4", "audio/webm"}  # ✅ Added WebM
+ALLOWED_VIDEO_TYPES = {"video/mp4", "video/quicktime", "video/x-msvideo", "video/webm"}
+ALLOWED_AUDIO_TYPES = {"audio/mpeg", "audio/wav", "audio/ogg", "audio/mp4", "audio/webm"}
+ALLOWED_PDF_TYPES = {"application/pdf"}
+ALLOWED_DOCUMENT_TYPES = ALLOWED_PDF_TYPES  # Can add more later
 
 # Max file sizes (in bytes)
 MAX_IMAGE_SIZE = 10 * 1024 * 1024  # 10 MB
 MAX_VIDEO_SIZE = 100 * 1024 * 1024  # 100 MB
 MAX_AUDIO_SIZE = 25 * 1024 * 1024  # 25 MB
+MAX_PDF_SIZE = 25 * 1024 * 1024  # 25 MB
 
 
 class FileUploadError(Exception):
@@ -189,3 +192,66 @@ def delete_file(file_path: str) -> bool:
     except Exception as e:
         print(f"File deletion failed: {e}")
         return False
+
+
+async def save_file(file: UploadFile, subfolder: str = "files") -> dict:
+    """
+    Save any type of file (video, PDF, etc.)
+    Returns file info with path and URL
+    """
+    # Validate file type
+    file_type = file.content_type
+    
+    allowed_types = (
+        ALLOWED_IMAGE_TYPES | 
+        ALLOWED_VIDEO_TYPES | 
+        ALLOWED_AUDIO_TYPES | 
+        ALLOWED_DOCUMENT_TYPES
+    )
+    
+    if file_type not in allowed_types:
+        raise FileUploadError(
+            f"File type {file_type} not allowed. "
+            f"Allowed: images, videos, audio, PDFs"
+        )
+    
+    # Check file size
+    content = await file.read()
+    file_size = len(content)
+    
+    max_size = MAX_VIDEO_SIZE  # Use largest limit
+    if file_type in ALLOWED_IMAGE_TYPES:
+        max_size = MAX_IMAGE_SIZE
+    elif file_type in ALLOWED_AUDIO_TYPES:
+        max_size = MAX_AUDIO_SIZE
+    elif file_type in ALLOWED_DOCUMENT_TYPES:
+        max_size = MAX_PDF_SIZE
+    
+    if file_size > max_size:
+        raise FileUploadError(
+            f"File too large. Max size: {max_size / (1024*1024)}MB"
+        )
+    
+    # Generate unique filename
+    filename = generate_unique_filename(file.filename or "file")
+    
+    # Create subfolder
+    folder_path = UPLOAD_DIR / subfolder
+    folder_path.mkdir(exist_ok=True, parents=True)
+    
+    # Save file
+    file_path = folder_path / filename
+    async with aiofiles.open(file_path, 'wb') as f:
+        await f.write(content)
+    
+    # Return file info
+    relative_path = f"{subfolder}/{filename}"
+    
+    return {
+        "filename": filename,
+        "original_filename": file.filename,
+        "path": relative_path,
+        "url": get_file_url(relative_path),
+        "size": file_size,
+        "type": file_type
+    }

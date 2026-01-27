@@ -332,7 +332,7 @@ export const spaceApi = {
 // --- POSTS/MEMORIES ENDPOINTS ---
 
 export const postsApi = {
-  uploadMedia: async (file: File, mediaType: 'photo' | 'video' | 'audio'): Promise<{
+  uploadMedia: async (file: File, mediaType: 'photo' | 'video' | 'audio' | 'pdf'): Promise<{
     file_path: string;
     file_url: string;
     media_type: string;
@@ -651,5 +651,27 @@ export const chatApi = {
     await api.delete(`/api/chat/${messageId}`, {
       params: { space_id: spaceId },
     });
+  },
+};
+
+// --- FILE UPLOAD (VIDEO/PDF) ---
+
+export const fileApi = {
+  uploadFile: async (file: File): Promise<{
+    file_url: string;
+    file_path: string;
+    file_type: string;
+    file_size: number;
+    original_filename: string;
+  }> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const response = await api.post('/api/posts/upload-file', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+    return response.data;
   },
 };

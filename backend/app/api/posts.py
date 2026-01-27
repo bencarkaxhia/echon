@@ -12,7 +12,7 @@ from datetime import datetime
 import json
 
 from ..core.database import get_db
-from ..core.storage import save_image, save_video, save_audio, get_file_url, FileUploadError
+from ..core.storage import save_image, save_video, save_audio, save_file, get_file_url, FileUploadError
 from ..models import Post, Comment, Reaction, PostTag, User, SpaceMember
 from ..schemas.post import (
     PostCreate, PostResponse, PostListResponse,
@@ -39,12 +39,12 @@ def check_space_membership(db: Session, user_id: str, space_id: str) -> bool:
 @router.post("/upload-media", status_code=status.HTTP_201_CREATED)
 async def upload_media(
     file: UploadFile = File(...),
-    media_type: str = Form(...),  # "photo", "video", "audio"
+    media_type: str = Form(...),  # "photo", "video", "audio", "pdf"
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    Upload a photo, video, or audio file
+    Upload a photo, video, audio, or PDF file
     Returns the file URL
     """
     try:
@@ -55,10 +55,14 @@ async def upload_media(
             file_path = await save_video(file, subfolder="memories/videos")
         elif media_type == "audio":
             file_path = await save_audio(file, subfolder="memories/audio")
+        elif media_type == "pdf":
+            # Use the general save_file function for PDFs
+            result = await save_file(file, subfolder="memories/documents")
+            file_path = result["path"]
         else:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid media_type. Must be: photo, video, or audio"
+                detail="Invalid media_type. Must be: photo, video, audio, or pdf"
             )
         
         return {
@@ -547,3 +551,32 @@ def delete_post(
     db.commit()
     
     return None
+
+
+# --- UPLOAD VIDEO/PDF ---
+
+from ..core.storage import save_file, FileUploadError
+
+@router.post("/upload-file", status_code=status.HTTP_200_OK)
+async def upload_file(
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_user)
+):
+    """
+    Upload video or PDF file
+    Returns file URL to attach to post
+    """
+    try:
+        result = await save_file(file, subfolder="media")
+        return {
+            "file_url": result["url"],
+            "file_path": result["path"],
+            "file_type": result["type"],
+            "file_size": result["size"],
+            "original_filename": result["original_filename"]
+        }
+    except FileUploadError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )

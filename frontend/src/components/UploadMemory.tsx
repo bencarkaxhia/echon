@@ -34,12 +34,21 @@ export default function UploadMemory({ onSuccess, onCancel }: UploadMemoryProps)
     if (!selectedFiles) return;
 
     const fileArray = Array.from(selectedFiles);
-    const validFiles = fileArray.filter(f => f.type.startsWith('image/') || f.type.startsWith('video/'));
+    const validFiles = fileArray.filter(f => 
+      f.type.startsWith('image/') || 
+      f.type.startsWith('video/') ||
+      f.type === 'application/pdf'
+    );
 
     setFiles(validFiles);
 
     // Create previews
-    const previewUrls = validFiles.map(file => URL.createObjectURL(file));
+    const previewUrls = validFiles.map(file => {
+      if (file.type === 'application/pdf') {
+        return 'PDF'; // Special marker for PDFs
+      }
+      return URL.createObjectURL(file);
+    });
     setPreviews(previewUrls);
   };
 
@@ -73,9 +82,13 @@ export default function UploadMemory({ onSuccess, onCancel }: UploadMemoryProps)
       if (!spaceId) throw new Error('No space selected');
 
       // Upload files
-      const uploadPromises = files.map(file => 
-        postsApi.uploadMedia(file, file.type.startsWith('image/') ? 'photo' : 'video')
-      );
+      const uploadPromises = files.map(file => {
+        let mediaType: 'photo' | 'video' | 'audio' = 'photo';
+        if (file.type.startsWith('video/')) {
+          mediaType = 'video';
+        }
+        return postsApi.uploadMedia(file, mediaType);
+      });
       const uploadResults = await Promise.all(uploadPromises);
 
       // Create post
@@ -83,7 +96,8 @@ export default function UploadMemory({ onSuccess, onCancel }: UploadMemoryProps)
         space_id: spaceId,
         content: formData.content || undefined,
         media_urls: uploadResults.map(r => r.file_url),
-        media_type: files[0].type.startsWith('image/') ? 'photo' : 'video',
+        media_type: files[0].type === 'application/pdf' ? 'pdf' : 
+                    files[0].type.startsWith('image/') ? 'photo' : 'video',
         event_date: formData.event_date || undefined,
         location: formData.location || undefined,
         privacy_level: 'space',
@@ -136,7 +150,7 @@ export default function UploadMemory({ onSuccess, onCancel }: UploadMemoryProps)
             >
               <div className="text-6xl mb-4">📸</div>
               <p className="text-echon-cream text-lg mb-2">
-                Drop photos or videos here
+                Drop photos, videos, or PDFs here
               </p>
               <p className="text-echon-cream-dark text-sm mb-4">
                 or click to browse
@@ -155,7 +169,7 @@ export default function UploadMemory({ onSuccess, onCancel }: UploadMemoryProps)
                 ref={fileInputRef}
                 type="file"
                 multiple
-                accept="image/*,video/*"
+                accept="image/*,video/*,application/pdf"
                 onChange={(e) => handleFiles(e.target.files)}
                 className="hidden"
               />
@@ -165,12 +179,22 @@ export default function UploadMemory({ onSuccess, onCancel }: UploadMemoryProps)
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 {previews.map((preview, idx) => (
-                  <div key={idx} className="relative aspect-square rounded-lg overflow-hidden">
-                    <img
-                      src={preview}
-                      alt={`Preview ${idx + 1}`}
+                  <div key={idx} className="relative aspect-square rounded-lg overflow-hidden bg-echon-shadow border border-echon-wood">
+                    {preview === 'PDF' ? (
+                      <div className="w-full h-full flex flex-col items-center justify-center">
+                        <div className="text-6xl mb-2">📄</div>
+                        <p className="text-echon-cream text-sm">{files[idx].name}</p>
+                        <p className="text-echon-cream-dark text-xs mt-1">
+                          {(files[idx].size / 1024).toFixed(0)} KB
+                        </p>
+                      </div>
+                    ) : (
+                      <img
+                        src={preview}
+                        alt={`Preview ${idx + 1}`}
                       className="w-full h-full object-cover"
                     />
+                    )}
                     <button
                       type="button"
                       onClick={() => {

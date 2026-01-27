@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     
     # Redis
     # REDIS_URL: str = "redis://localhost:6379/0"     # local redis deployment
-    REDIS_URL: str = "redis://default:qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE@yamanote.proxy.rlwy.net:47182"                           # Railway Redis Deployment
+    REDIS_URL: str = "redis://default:qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE@yamanote.proxy.rlwy.net:47182"                         # Railway Redis Deployment
     # REDIS_PASSWORD: Optional[str] = "qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE"                                                        # Railway Redis Password
     
     # CORS (Frontend URLs)
