@@ -184,7 +184,7 @@ async def upload_space_emblem(
     try:
         # Save image
         result = await save_image(file, subfolder="emblems", create_thumbnail=True)
-        file_url = get_file_url(result["url"]) or get_file_url(result["original"])          # added "url" for R2 Storage - Railway Deployment
+        file_url = result.get("url") or get_file_url(result["original"])          # added "url" for R2 Storage - Railway Deployment
         
         # Update space
         space.emblem_url = file_url

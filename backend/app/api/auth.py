@@ -182,7 +182,7 @@ async def upload_profile_photo(
     try:
         # Save image
         result = await save_image(file, subfolder="profiles", create_thumbnail=True)
-        file_url = get_file_url(result["url"]) or get_file_url(result["original"])              # added "url" for R2 Storage - Railway Deployment
+        file_url = result.get("url") or get_file_url(result["original"])             # added "url" for R2 Storage - Railway Deployment
         
         # Update user
         current_user.profile_photo_url = file_url
