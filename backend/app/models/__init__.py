@@ -8,6 +8,7 @@ from .space import FamilySpace, SpaceMember
 from .post import Post, Comment, Reaction, PostTag
 from .invitation import Invitation
 from .relationship import Relationship
+from .notification import Notification
 
 __all__ = [
     "User",
@@ -19,4 +20,5 @@ __all__ = [
     "PostTag",
     "Invitation",
     "Relationship",
+    "Notification",
 ]
