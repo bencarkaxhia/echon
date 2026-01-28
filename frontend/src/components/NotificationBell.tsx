@@ -42,8 +42,8 @@ export default function NotificationBell() {
 
   const loadNotifications = async () => {
     try {
-      const spaceId = getCurrentSpace();
-      const data = await notificationsApi.getAll(spaceId || undefined);
+      const spaceId = getCurrentSpace() || undefined;
+      const data = await notificationsApi.getAll(spaceId);
       setNotifications(data.notifications.slice(0, 10)); // Show last 10
       setUnreadCount(data.unread_count);
     } catch (error) {

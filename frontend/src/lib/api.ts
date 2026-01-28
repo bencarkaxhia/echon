@@ -808,7 +808,7 @@ export const notificationsApi = {
     total: number;
     unread_count: number;
   }> => {
-    const response = await api.get('/api/notifications', {
+    const response = await api.get('/api/notifications/', {
       params: { space_id: spaceId, unread_only: unreadOnly },
     });
     return response.data;
