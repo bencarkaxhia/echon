@@ -18,7 +18,7 @@ app = FastAPI(
     title=settings.APP_NAME,
     version=settings.VERSION,
     debug=settings.DEBUG,
-    redirect_slashes=False      # prevents 307 redirects on missing trailing slashes
+    redirect_slashes=False  # Prevent 307 redirects on missing trailing slashes
 )
 
 # CORS middleware (allow frontend to call API)
