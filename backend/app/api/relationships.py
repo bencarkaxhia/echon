@@ -19,6 +19,7 @@ from ..schemas.relationship import (
     RelationshipCalculation
 )
 from .auth import get_current_user
+from .notification_helpers import notify_space_members      # Notify space members for newly created relationships
 
 router = APIRouter()
 
@@ -76,6 +77,26 @@ def create_relationship(
     db.add(new_rel)
     db.commit()
     db.refresh(new_rel)
+    
+    # Notify space members for new created relationships
+    try:
+        person_a = db.query(User).filter(User.id == rel_data.person_a_id).first()
+        person_b = db.query(User).filter(User.id == rel_data.person_b_id).first()
+        
+        notify_space_members(
+            db=db,
+            space_id=rel_data.space_id,
+            exclude_user_id=current_user.id,
+            notification_type="new_relationship",
+            title="New family relationship added",
+            message=f"{person_a.name if person_a else 'Someone'} is {rel_data.relationship_type} of {person_b.name if person_b else 'someone'}",
+            link_url="/space/family/tree",
+            actor_id=current_user.id,
+            actor_name=current_user.name,
+            actor_photo=current_user.profile_photo_url
+        )
+    except Exception as e:
+        print(f"Failed to send notifications: {e}")
     
     # Get person names
     person_a = db.query(User).filter(User.id == rel_data.person_a_id).first()

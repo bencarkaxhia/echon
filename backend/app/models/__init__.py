@@ -20,5 +20,5 @@ __all__ = [
     "PostTag",
     "Invitation",
     "Relationship",
-    "Notification",
+    "Notification", 
 ]

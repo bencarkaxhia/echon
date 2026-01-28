@@ -776,3 +776,66 @@ export const relationshipsApi = {
     });
   },
 };
+
+// --- NOTIFICATIONS ---
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  space_id: string;
+  type: string;
+  title: string;
+  message: string;
+  link_url?: string;
+  actor_id?: string;
+  actor_name?: string;
+  actor_photo?: string;
+  is_read: boolean;
+  read_at?: string;
+  created_at: string;
+}
+
+export interface NotificationStats {
+  total: number;
+  unread: number;
+  today: number;
+}
+
+export const notificationsApi = {
+  // Get notifications
+  getAll: async (spaceId?: string, unreadOnly: boolean = false): Promise<{
+    notifications: Notification[];
+    total: number;
+    unread_count: number;
+  }> => {
+    const response = await api.get('/api/notifications', {
+      params: { space_id: spaceId, unread_only: unreadOnly },
+    });
+    return response.data;
+  },
+
+  // Get stats
+  getStats: async (spaceId?: string): Promise<NotificationStats> => {
+    const response = await api.get('/api/notifications/stats', {
+      params: { space_id: spaceId },
+    });
+    return response.data;
+  },
+
+  // Mark as read
+  markAsRead: async (notificationId: string): Promise<void> => {
+    await api.post(`/api/notifications/${notificationId}/read`);
+  },
+
+  // Mark all as read
+  markAllAsRead: async (spaceId?: string): Promise<void> => {
+    await api.post('/api/notifications/mark-all-read', null, {
+      params: { space_id: spaceId },
+    });
+  },
+
+  // Delete notification
+  delete: async (notificationId: string): Promise<void> => {
+    await api.delete(`/api/notifications/${notificationId}`);
+  },
+};

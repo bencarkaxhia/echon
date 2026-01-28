@@ -14,6 +14,7 @@ import string
 from ..core.database import get_db
 from ..models import User, FamilySpace, SpaceMember, Invitation
 from .auth import get_current_user
+from .notification_helpers import notify_space_members      # Notify space members after new member added to space
 
 router = APIRouter()
 
@@ -150,6 +151,23 @@ def join_with_code(
     # Don't set to "accepted" yet - only after admin approval
     
     db.commit()
+    
+    # Notify space members that a new member joined the space
+    try:
+        notify_space_members(
+            db=db,
+            space_id=space_id,
+            exclude_user_id=current_user.id,
+            notification_type="member_joined",
+            title=f"{current_user.name} joined the family!",
+            message="Welcome the new member to the space",
+            link_url="/space/family",
+            actor_id=current_user.id,
+            actor_name=current_user.name,
+            actor_photo=current_user.profile_photo_url
+        )
+    except Exception as e:
+        print(f"Failed to send notifications: {e}")
     
     # Get space info
     space = db.query(FamilySpace).filter(FamilySpace.id == invitation.space_id).first()

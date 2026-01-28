@@ -10,6 +10,8 @@ import { useNavigate } from 'react-router-dom';
 import { logout, getCurrentUser } from '../lib/auth';
 import RotatingSphere from './RotatingSphere';
 import { getMediaUrl } from '../lib/api';
+import NotificationBell from './NotificationBell';
+
 
 interface Door {
   id: string;
@@ -114,31 +116,31 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
         </motion.div>
       )}
 
-      {/* Logout Button - Top Right */}
-      <motion.button
+      {/* Top Right - Notifications & Logout */}
+      <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 1 }}
-        onClick={handleLogout}
-        className="absolute top-4 right-4 z-50 px-3 py-1.5 md:px-4 md:py-2 text-xs md:text-sm bg-echon-shadow border border-echon-wood rounded-lg text-echon-cream/90 hover:bg-echon-wood hover:border-echon-gold transition-colors"
+        className="absolute top-4 right-4 z-50 flex items-center gap-2"
       >
+        <div className="bg-echon-shadow border border-echon-wood rounded-lg px-2 py-2">
+          <NotificationBell />
+        </div>
+        <button onClick={handleLogout}
+        className="px-4 py-2 bg-echon-shadow border border-echon-wood rounded-lg text-echon-cream hover:bg-echon-wood hover:border-echon-gold transition-colors"
+        >
         Sign out
-      </motion.button>
+        </button>
 
-      {/* Hero copy */}
-      {/* <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        className="absolute top-6 left-1/2 -translate-x-1/2 text-center px-4"
-      >
-        <h1 className="text-echon-cream text-2xl md:text-3xl font-serif font-semibold">
-          Welcome to {familyName}
-        </h1>
-        <p className="mt-2 text-echon-cream-dark text-sm md:text-base max-w-md mx-auto">
-          Choose a door to explore your family&apos;s memories, stories, people, and life now.
-        </p>
-      </motion.div> */}
+        {/* Orignal butto with symbol commented out, instead just 'Sign out' text */}
+        {/* <button
+          onClick={handleLogout}
+          className="px-4 py-2 bg-echon-shadow border border-echon-wood rounded-lg text-echon-cream hover:bg-echon-wood hover:border-echon-gold transition-colors"
+        >
+          🚪 Logout
+        </button> */}
+
+      </motion.div>
 
       {/* Central Emblem / Family Symbol - 3D Rotating Sphere */}
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2">

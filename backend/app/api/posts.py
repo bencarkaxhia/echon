@@ -20,6 +20,8 @@ from ..schemas.post import (
     ReactionCreate, ReactionResponse
 )
 from .auth import get_current_user
+from .notification_helpers import notify_space_members      # notify space members for new posts
+from .notification_helpers import notify_specific_user      # notify users for comments on their posts
 
 router = APIRouter()
 
@@ -132,6 +134,24 @@ def create_post(
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
+    
+    # Add notification after post has been created - for all space members
+    try:
+        notify_space_members(
+            db=db,
+            space_id=post_data.space_id,
+            exclude_user_id=current_user.id,
+            notification_type="new_post",
+            title=f"{current_user.name} posted a new memory",
+            message=new_post.content[:100] if new_post.content else "Check out the new post!",
+            link_url="/space/memories",
+            actor_id=current_user.id,
+            actor_name=current_user.name,
+            actor_photo=current_user.profile_photo_url
+        )
+    except Exception as e:
+        print(f"Failed to send notifications: {e}")
+        # Don't fail the post creation if notification fails
     
     # Add tags if provided (store as text tags in PostTag.tag field)
     if post_data.tags:
@@ -303,6 +323,28 @@ def add_comment(
     db.add(new_comment)
     db.commit()
     db.refresh(new_comment)
+    
+    # Create new comment notification for the user who created the post
+    # First get the post author
+    post = db.query(Post).filter(Post.id == comment_data.post_id).first()
+
+    if post and post.author_id != current_user.id:
+        # Notify the post author
+        try:
+            notify_specific_user(
+                db=db,
+                user_id=post.author_id,
+                space_id=post.space_id,
+                notification_type="new_comment",
+                title=f"{current_user.name} commented on your post",
+                message=new_comment.content[:100],
+                link_url=f"/space/memories",
+                actor_id=current_user.id,
+                actor_name=current_user.name,
+                actor_photo=current_user.profile_photo_url
+            )
+        except Exception as e:
+            print(f"Failed to send notification: {e}")
     
     # Build response manually
     response = CommentResponse(
