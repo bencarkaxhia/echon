@@ -54,7 +54,7 @@ redis_data/
 # Logs & sensitive files
 *.log
 logs/
-echon_access_data.txt
+__echon_access_data.txt
 echon_db_backup.sql
 echon_claude_view.md
 echon_create_relationships_manually.sql
