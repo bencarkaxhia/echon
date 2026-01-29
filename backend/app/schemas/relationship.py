@@ -23,11 +23,17 @@ class RelationshipCreate(BaseModel):
     @validator('relationship_type')
     def validate_relationship_type(cls, v):
         valid_types = [
+            # Specific family types
+            'father', 'mother', 'son', 'daughter', 'brother', 'sister',
+            'grandfather', 'grandmother', 'grandson', 'granddaughter',
+            'step_father', 'step_mother', 'step_son', 'step_daughter',
+            'step_brother', 'step_sister',
+            'husband', 'wife',
+            # Generic types (for flexibility)
             'parent', 'child', 'sibling', 'spouse',
             'grandparent', 'grandchild',
-            'aunt', 'uncle', 'niece', 'nephew',
-            'cousin', 'in_law', 'step_parent', 'step_child',
-            'half_sibling', 'adopted_child', 'adopted_parent'
+            'aunt', 'uncle', 'niece', 'nephew', 'cousin',
+            'in_law', 'half_sibling', 'adopted_child', 'adopted_parent'
         ]
         if v not in valid_types:
             raise ValueError(f'Invalid relationship type. Must be one of: {", ".join(valid_types)}')

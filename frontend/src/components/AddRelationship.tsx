@@ -18,17 +18,37 @@ interface AddRelationshipProps {
 }
 
 const RELATIONSHIP_TYPES = [
-  { value: 'parent', label: 'Parent', emoji: '👨‍👩' },
-  { value: 'child', label: 'Child', emoji: '👶' },
-  { value: 'sibling', label: 'Sibling', emoji: '👫' },
-  { value: 'spouse', label: 'Spouse', emoji: '💑' },
-  { value: 'grandparent', label: 'Grandparent', emoji: '👴' },
-  { value: 'grandchild', label: 'Grandchild', emoji: '👧' },
-  { value: 'aunt', label: 'Aunt', emoji: '👩' },
-  { value: 'uncle', label: 'Uncle', emoji: '👨' },
-  { value: 'niece', label: 'Niece', emoji: '👧' },
-  { value: 'nephew', label: 'Nephew', emoji: '👦' },
-  { value: 'cousin', label: 'Cousin', emoji: '👥' },
+  // Nuclear Family - Specific
+  { value: 'father', label: 'Father', emoji: '👨', inverse: 'son_or_daughter', category: 'parent' },
+  { value: 'mother', label: 'Mother', emoji: '👩', inverse: 'son_or_daughter', category: 'parent' },
+  { value: 'son', label: 'Son', emoji: '👦', inverse: 'parent', category: 'child' },
+  { value: 'daughter', label: 'Daughter', emoji: '👧', inverse: 'parent', category: 'child' },
+  { value: 'brother', label: 'Brother', emoji: '👦', inverse: 'sibling', category: 'sibling' },
+  { value: 'sister', label: 'Sister', emoji: '👧', inverse: 'sibling', category: 'sibling' },
+  
+  // Extended Family - Specific
+  { value: 'grandfather', label: 'Grandfather', emoji: '👴', inverse: 'grandchild', category: 'grandparent' },
+  { value: 'grandmother', label: 'Grandmother', emoji: '👵', inverse: 'grandchild', category: 'grandparent' },
+  { value: 'grandson', label: 'Grandson', emoji: '👦', inverse: 'grandparent', category: 'grandchild' },
+  { value: 'granddaughter', label: 'Granddaughter', emoji: '👧', inverse: 'grandparent', category: 'grandchild' },
+  
+  // Step Family
+  { value: 'step_father', label: 'Step Father', emoji: '👨', inverse: 'step_child', category: 'step_parent' },
+  { value: 'step_mother', label: 'Step Mother', emoji: '👩', inverse: 'step_child', category: 'step_parent' },
+  { value: 'step_son', label: 'Step Son', emoji: '👦', inverse: 'step_parent', category: 'step_child' },
+  { value: 'step_daughter', label: 'Step Daughter', emoji: '👧', inverse: 'step_parent', category: 'step_child' },
+  { value: 'step_brother', label: 'Step Brother', emoji: '👦', inverse: 'step_sibling', category: 'step_sibling' },
+  { value: 'step_sister', label: 'Step Sister', emoji: '👧', inverse: 'step_sibling', category: 'step_sibling' },
+  
+  // Generic (for flexible situations)
+  { value: 'parent', label: 'Parent (Generic)', emoji: '👤', inverse: 'child', category: 'parent' },
+  { value: 'child', label: 'Child (Generic)', emoji: '👶', inverse: 'parent', category: 'child' },
+  { value: 'sibling', label: 'Sibling (Generic)', emoji: '👥', inverse: 'sibling', category: 'sibling' },
+  
+  // Spouse
+  { value: 'husband', label: 'Husband', emoji: '🤵', inverse: 'wife', category: 'spouse' },
+  { value: 'wife', label: 'Wife', emoji: '👰', inverse: 'husband', category: 'spouse' },
+  { value: 'spouse', label: 'Spouse (Generic)', emoji: '💑', inverse: 'spouse', category: 'spouse' },
 ];
 
 export default function AddRelationship({ 
@@ -90,6 +110,7 @@ export default function AddRelationship({
       const spaceId = getCurrentSpace();
       if (!spaceId) return;
 
+      // Create the main relationship (A → B)
       await relationshipsApi.create({
         space_id: spaceId,
         person_a_id: personAId,
@@ -97,6 +118,38 @@ export default function AddRelationship({
         relationship_type: relationshipType,
         confidence_level: 'confirmed',
       });
+
+      // Create the inverse relationship (B → A)
+      const selectedType = RELATIONSHIP_TYPES.find(t => t.value === relationshipType);
+      if (selectedType?.inverse) {
+        let inverseType = selectedType.inverse;
+        
+        // Handle special case: son_or_daughter needs to check actual relationship
+        if (inverseType === 'son_or_daughter') {
+          // If we know the gender from the type (son/daughter), use it
+          // Otherwise use generic 'child'
+          inverseType = 'child';
+        }
+        
+        // Handle special case: parent needs to check actual relationship
+        if (inverseType === 'parent' && (relationshipType === 'son' || relationshipType === 'daughter')) {
+          // Keep as 'parent' - we don't know if it's mother or father
+          inverseType = 'parent';
+        }
+        
+        try {
+          await relationshipsApi.create({
+            space_id: spaceId,
+            person_a_id: personBId,
+            person_b_id: personAId,
+            relationship_type: inverseType,
+            confidence_level: 'confirmed',
+          });
+        } catch (err) {
+          console.error('Failed to create inverse relationship:', err);
+          // Don't fail the whole operation if inverse fails
+        }
+      }
 
       // Success!
       onSuccess();
@@ -185,22 +238,101 @@ export default function AddRelationship({
                 <label className="block text-echon-cream text-sm font-semibold mb-2">
                   Relationship Type
                 </label>
-                <div className="grid grid-cols-2 gap-2">
-                  {RELATIONSHIP_TYPES.map((type) => (
-                    <button
-                      key={type.value}
-                      type="button"
-                      onClick={() => setRelationshipType(type.value)}
-                      className={`p-3 rounded-lg border-2 transition-all ${
-                        relationshipType === type.value
-                          ? 'border-echon-gold bg-echon-gold/20 text-echon-gold'
-                          : 'border-echon-wood hover:border-echon-gold text-echon-cream'
-                      }`}
-                    >
-                      <div className="text-2xl mb-1">{type.emoji}</div>
-                      <div className="text-sm font-semibold">{type.label}</div>
-                    </button>
-                  ))}
+                
+                {/* Nuclear Family */}
+                <div className="mb-4">
+                  <p className="text-echon-cream-dark text-xs mb-2">Nuclear Family</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {RELATIONSHIP_TYPES.filter(t => 
+                      ['father', 'mother', 'son', 'daughter', 'brother', 'sister'].includes(t.value)
+                    ).map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => setRelationshipType(type.value)}
+                        className={`p-2 rounded-lg border-2 transition-all ${
+                          relationshipType === type.value
+                            ? 'border-echon-gold bg-echon-gold/20 text-echon-gold'
+                            : 'border-echon-wood hover:border-echon-gold text-echon-cream'
+                        }`}
+                      >
+                        <div className="text-xl mb-1">{type.emoji}</div>
+                        <div className="text-xs font-semibold">{type.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Extended Family */}
+                <div className="mb-4">
+                  <p className="text-echon-cream-dark text-xs mb-2">Extended Family</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {RELATIONSHIP_TYPES.filter(t => 
+                      ['grandfather', 'grandmother', 'grandson', 'granddaughter'].includes(t.value)
+                    ).map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => setRelationshipType(type.value)}
+                        className={`p-2 rounded-lg border-2 transition-all ${
+                          relationshipType === type.value
+                            ? 'border-echon-gold bg-echon-gold/20 text-echon-gold'
+                            : 'border-echon-wood hover:border-echon-gold text-echon-cream'
+                        }`}
+                      >
+                        <div className="text-xl mb-1">{type.emoji}</div>
+                        <div className="text-xs font-semibold">{type.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Step Family & Spouse */}
+                <div className="mb-4">
+                  <p className="text-echon-cream-dark text-xs mb-2">Step Family & Spouse</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {RELATIONSHIP_TYPES.filter(t => 
+                      ['step_father', 'step_mother', 'step_brother', 'step_sister', 'husband', 'wife'].includes(t.value)
+                    ).map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => setRelationshipType(type.value)}
+                        className={`p-2 rounded-lg border-2 transition-all ${
+                          relationshipType === type.value
+                            ? 'border-echon-gold bg-echon-gold/20 text-echon-gold'
+                            : 'border-echon-wood hover:border-echon-gold text-echon-cream'
+                        }`}
+                      >
+                        <div className="text-xl mb-1">{type.emoji}</div>
+                        <div className="text-xs font-semibold">{type.label}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Generic Options */}
+                <div>
+                  <p className="text-echon-cream-dark text-xs mb-2">Generic (Flexible)</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {RELATIONSHIP_TYPES.filter(t => 
+                      ['parent', 'child', 'sibling', 'spouse'].includes(t.value)
+                    ).map((type) => (
+                      <button
+                        key={type.value}
+                        type="button"
+                        onClick={() => setRelationshipType(type.value)}
+                        className={`p-2 rounded-lg border-2 transition-all ${
+                          relationshipType === type.value
+                            ? 'border-echon-gold bg-echon-gold/20 text-echon-gold'
+                            : 'border-echon-wood hover:border-echon-gold text-echon-cream'
+                        }`}
+                      >
+                        <div className="text-xl mb-1">{type.emoji}</div>
+                        <div className="text-xs font-semibold">{type.label}</div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
