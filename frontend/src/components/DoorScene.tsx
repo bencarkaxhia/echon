@@ -151,194 +151,154 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
         />
       </div>
 
-      {/* The 4 Doors - Ancient & Beautiful */}
+      {/* The 4 Arched Wooden Doors - Cathedral Style */}
       {doors.map((door, index) => (
         <motion.div
           key={door.id}
-          initial={{ opacity: 0, scale: 0.8, rotateY: -90 }}
-          animate={{ opacity: 1, scale: 1, rotateY: 0 }}
-          transition={{
-            duration: 1.2,
-            delay: 1 + index * 0.2,
-            type: 'spring',
-            stiffness: 100,
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ 
+            duration: 0.8, 
+            delay: 1 + index * 0.15,
+            type: "spring"
           }}
           className={`absolute ${door.position}`}
-          style={{ perspective: '1000px' }}
         >
           <button
             onClick={() => handleDoorClick(door.route)}
             onMouseEnter={() => setHoveredDoor(door.id)}
             onMouseLeave={() => setHoveredDoor(null)}
-            className="group relative w-32 h-40 md:w-40 md:h-56"
+            className="group relative focus:outline-none"
           >
-            {/* Glow behind door */}
+            {/* Glow from door */}
             <motion.div
               animate={{
-                opacity: hoveredDoor === door.id ? 0.4 : 0,
-                scale: hoveredDoor === door.id ? 1.2 : 1,
+                opacity: hoveredDoor === door.id ? 0.8 : 0.3,
+                scale: hoveredDoor === door.id ? 1.5 : 1.2
               }}
               transition={{ duration: 0.5 }}
-              className="absolute inset-0 bg-echon-candle rounded-lg blur-2xl -z-10"
+              className="absolute inset-0 bg-gradient-radial from-amber-500/40 to-transparent rounded-t-full blur-2xl -z-10"
+              style={{ transform: 'translateY(50%)' }}
             />
 
-            {/* Door Frame - Ancient Wood */}
-            <motion.div
-              animate={{
-                scale: hoveredDoor === door.id ? 1.05 : 1,
-                rotateY: hoveredDoor === door.id ? -15 : 0,
-                // Mobile-friendly: Gentle breathing glow (alternating doors)
-                boxShadow:
-                  hoveredDoor === door.id
-                    ? '0 20px 60px rgba(212, 175, 55, 0.6)' // Hover: strong glow
-                    : index % 2 === 0 // Alternating pattern
-                    ? [
-                        '0 10px 30px rgba(0, 0, 0, 0.5)',
-                        '0 10px 40px rgba(212, 175, 55, 0.3)',
-                        '0 10px 30px rgba(0, 0, 0, 0.5)',
-                      ]
-                    : '0 10px 30px rgba(0, 0, 0, 0.5)',
-              }}
-              transition={{
-                scale: { duration: 0.6, type: 'spring', stiffness: 200 },
-                rotateY: { duration: 0.6, type: 'spring', stiffness: 200 },
-                boxShadow: {
-                  duration: 3, // 3 second breathing cycle
-                  repeat: Infinity,
-                  repeatType: 'reverse',
-                  delay: index * 0.8, // Stagger each door
-                },
-              }}
-            >
-              {/* Wood grain texture overlay */}
-              <div
-                className="absolute inset-0 opacity-40"
-                style={{
-                  backgroundImage: `repeating-linear-gradient(
-                    90deg,
-                    transparent,
-                    transparent 3px,
-                    rgba(0,0,0,0.1) 3px,
-                    rgba(0,0,0,0.1) 6px
-                  )`,
+            {/* Arched Door Frame */}
+            <div className="relative w-28 h-36 md:w-28 md:h-36">
+              {/* Door shape with arch */}
+              <motion.div
+                animate={{
+                  scale: hoveredDoor === door.id ? 1.05 : 1,
+                  boxShadow: hoveredDoor === door.id 
+                    ? '0 10px 40px rgba(0, 0, 0, 0.8), inset 0 -10px 30px rgba(0, 0, 0, 0.7)'
+                    : '0 5px 20px rgba(0, 0, 0, 0.6), inset 0 -5px 15px rgba(0, 0, 0, 0.5)'
                 }}
-              />
-
-              {/* Door border - carved wood */}
-              <div className="absolute inset-0 border-8 border-amber-950/80 rounded-lg" />
-              <div className="absolute inset-2 border-2 border-amber-700/40 rounded-md" />
-
-              {/* Candle light holder */}
-              <div className="absolute top-6 left-1/2 transform -translate-x-1/2 w-8 h-12 flex flex-col items-center">
-                {/* Candle holder */}
-                <div className="w-6 h-2 bg-gradient-to-b from-yellow-800 to-yellow-900 rounded-sm mb-1" />
-
-                {/* Candle flame */}
-                <motion.div
-                  animate={{
-                    scale:
-                      hoveredDoor === door.id ? [1, 1.2, 1] : [1, 1.1, 1],
-                    opacity: hoveredDoor === door.id ? 1 : 0.7,
+                transition={{ duration: 0.3 }}
+                className="relative w-full h-full overflow-hidden"
+                style={{
+                  borderRadius: '50% 50% 0 0',  // Arch at top!
+                  background: 'linear-gradient(180deg, #92400e 0%, #78350f 40%, #451a03 100%)'
+                }}
+              >
+                {/* Wood grain texture - vertical */}
+                <div 
+                  className="absolute inset-0 opacity-40"
+                  style={{
+                    backgroundImage: `repeating-linear-gradient(
+                      0deg,
+                      transparent,
+                      transparent 3px,
+                      rgba(0, 0, 0, 0.15) 3px,
+                      rgba(0, 0, 0, 0.15) 6px
+                    )`
                   }}
-                  transition={{
-                    duration: hoveredDoor === door.id ? 0.3 : 2,
-                    repeat: Infinity,
-                    repeatType: 'reverse',
-                  }}
-                  className="relative w-3 h-6"
-                >
-                  {/* Flame core */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-yellow-500 via-orange-400 to-red-500 rounded-full blur-sm" />
-                  {/* Flame glow */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-yellow-300 to-orange-300 rounded-full scale-150 blur-md opacity-50" />
-                </motion.div>
+                />
 
-                {/* Light rays */}
+                {/* Wood panels - horizontal divisions */}
+                <div className="absolute top-[30%] left-[10%] right-[10%] h-[1px] bg-black/40" />
+                <div className="absolute top-[60%] left-[10%] right-[10%] h-[1px] bg-black/40" />
+
+                {/* Door frame border */}
+                <div className="absolute inset-0 border-4 border-amber-950/80" 
+                     style={{ borderRadius: '50% 50% 0 0' }} 
+                />
+                
+                {/* Inner highlight */}
+                <div className="absolute inset-[6px] border-[1px] border-amber-600/30" 
+                     style={{ borderRadius: '50% 50% 0 0' }} 
+                />
+
+                {/* Glow from inside door (when hovered) */}
                 {hoveredDoor === door.id && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: [0, 0.6, 0] }}
                     transition={{ duration: 2, repeat: Infinity }}
-                    className="absolute top-8 w-20 h-20 bg-gradient-radial from-yellow-300/30 to-transparent rounded-full blur-xl"
+                    className="absolute inset-0 bg-gradient-to-b from-amber-400/20 to-transparent"
+                    style={{ borderRadius: '50% 50% 0 0' }}
                   />
                 )}
-              </div>
 
-              {/* Door Content */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-4 z-10">
-                {/* Emoji Icon */}
-                <motion.span
-                  animate={{
-                    scale: hoveredDoor === door.id ? 1.2 : 1,
-                    y: hoveredDoor === door.id ? -5 : 0,
-                  }}
-                  transition={{ duration: 0.3 }}
-                  className="text-5xl md:text-6xl mb-3 filter drop-shadow-lg"
-                >
-                  {door.emoji}
-                </motion.span>
-
-                {/* Door Title */}
-                <h3 className="text-echon-cream text-base md:text-xl font-semibold mb-2 text-center drop-shadow-lg font-serif">
-                  {door.title}
-                </h3>
-
-                {/* Door Description */}
-                <motion.p
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{
-                    opacity: hoveredDoor === door.id ? 1 : 0,
-                    height: hoveredDoor === door.id ? 'auto' : 0,
-                  }}
-                  transition={{ duration: 0.3 }}
-                  className="text-echon-cream-dark text-xs md:text-sm text-center px-3 drop-shadow overflow-hidden"
-                >
-                  {door.description}
-                </motion.p>
-
-                {/* Hover indicator */}
-                {hoveredDoor === door.id && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 text-echon-candle text-xs font-semibold"
+                {/* Content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center pb-2">
+                  {/* Emoji Icon */}
+                  <motion.span 
+                    animate={{
+                      scale: hoveredDoor === door.id ? 1.2 : 1,
+                      y: hoveredDoor === door.id ? -4 : 0
+                    }}
+                    transition={{ duration: 0.3 }}
+                    className="text-4xl md:text-5xl lg:text-6xl mb-1 filter drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]"
                   >
-                    → Enter →
-                  </motion.div>
-                )}
-              </div>
+                    {door.emoji}
+                  </motion.span>
 
-              {/* Magical particles on hover */}
+                  {/* Door Title */}
+                  <motion.p 
+                    animate={{
+                      opacity: hoveredDoor === door.id ? 1 : 0.9
+                    }}
+                    className="text-echon-cream text-sm md:text-base lg:text-lg font-serif italic drop-shadow-lg"
+                  >
+                    {door.title}
+                  </motion.p>
+                </div>
+
+                {/* Door handle/ring */}
+                <div className="absolute bottom-[15%] left-1/2 transform -translate-x-1/2">
+                  <div className="w-1.5 h-1.5 md:w-2 md:h-2 rounded-full bg-gradient-to-br from-yellow-700 to-yellow-900 shadow-inner" />
+                </div>
+              </motion.div>
+
+              {/* Floating sparkles on hover */}
               {hoveredDoor === door.id && (
                 <>
-                  {[...Array(6)].map((_, i) => (
+                  {[...Array(3)].map((_, i) => (
                     <motion.div
                       key={i}
-                      initial={{
-                        x: Math.random() * 100 - 50,
-                        y: Math.random() * 100 - 50,
-                        opacity: 0,
+                      initial={{ 
+                        x: Math.random() * 40 - 20,
+                        y: Math.random() * 40 - 20,
+                        opacity: 0 
                       }}
-                      animate={{
-                        y: [0, -50, -100],
+                      animate={{ 
+                        y: [0, -30, -60],
                         opacity: [0, 1, 0],
-                        scale: [0, 1, 0],
+                        scale: [0, 1, 0]
                       }}
-                      transition={{
+                      transition={{ 
                         duration: 2,
                         delay: i * 0.2,
-                        repeat: Infinity,
+                        repeat: Infinity
                       }}
-                      className="absolute w-1 h-1 bg-echon-candle rounded-full"
+                      className="absolute w-0.5 h-0.5 bg-amber-400 rounded-full blur-[0.5px]"
                       style={{
-                        left: `${20 + i * 15}%`,
-                        bottom: '20%',
+                        left: `${30 + i * 20}%`,
+                        top: '20%'
                       }}
                     />
                   ))}
                 </>
               )}
-            </motion.div>
+            </div>
           </button>
         </motion.div>
       ))}
