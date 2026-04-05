@@ -51,7 +51,8 @@ class Settings(BaseSettings):
     TWILIO_AUTH_TOKEN: Optional[str] = None
     TWILIO_PHONE_NUMBER: Optional[str] = None
     
-    # Email (SendGrid)
+    # Email — supports Resend (preferred) or SendGrid
+    RESEND_API_KEY: Optional[str] = None
     SENDGRID_API_KEY: Optional[str] = None
     FROM_EMAIL: str = "noreply@echon.app"
     

@@ -1,6 +1,5 @@
 /**
- * ForgotPassword page
- * User enters their email; backend sends (or shows) a reset link.
+ * ForgotPassword page — /forgot-password
  *
  * PATH: echon/frontend/src/pages/ForgotPassword.tsx
  */
@@ -15,7 +14,6 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [resetUrl, setResetUrl] = useState('');   // shown when no email service configured
   const [done, setDone] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -23,10 +21,7 @@ export default function ForgotPassword() {
     setError('');
     setLoading(true);
     try {
-      const result = await authApi.forgotPassword(email);
-      if (result.message === 'no_email_configured' && result.reset_url) {
-        setResetUrl(result.reset_url);
-      }
+      await authApi.forgotPassword(email);
       setDone(true);
     } catch (err: any) {
       setError(err.response?.data?.detail || 'Something went wrong. Please try again.');
@@ -94,45 +89,16 @@ export default function ForgotPassword() {
                 </button>
               </p>
             </form>
-          ) : resetUrl ? (
-            /* No email configured — show the link directly on screen */
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="text-4xl mb-2">⚠️</div>
-                <p className="text-echon-cream text-sm mb-1">
-                  Email service is not configured yet.
-                </p>
-                <p className="text-echon-cream-dark text-sm">
-                  Use this link to reset your password:
-                </p>
-              </div>
-              <div className="bg-echon-shadow border border-echon-gold/30 rounded-xl p-3">
-                <p className="text-echon-gold text-xs font-mono break-all select-all leading-relaxed">
-                  {resetUrl}
-                </p>
-              </div>
-              <button
-                onClick={() => navigator.clipboard.writeText(resetUrl)}
-                className="echon-btn-secondary w-full text-sm"
-              >
-                📋 Copy Link
-              </button>
-              <button
-                onClick={() => navigate(resetUrl.replace('https://echon.app', ''))}
-                className="echon-btn w-full"
-              >
-                Open Reset Page
-              </button>
-            </div>
           ) : (
-            /* Email sent */
             <div className="text-center space-y-4">
               <div className="text-5xl">📬</div>
-              <p className="text-echon-cream">
-                Check your inbox for a reset link.
-              </p>
+              <p className="text-echon-cream font-serif text-lg">Check your inbox</p>
               <p className="text-echon-cream-dark text-sm">
-                The link expires in 1 hour. If you don't see the email, check your spam folder.
+                If <span className="text-echon-cream">{email}</span> is registered,
+                a reset link has been sent. The link expires in 1 hour.
+              </p>
+              <p className="text-echon-cream-dark/60 text-xs">
+                Don't see it? Check your spam folder.
               </p>
               <button onClick={() => navigate('/login')} className="echon-btn w-full">
                 Back to Sign In

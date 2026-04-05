@@ -248,53 +248,97 @@ async def upload_profile_photo(
 
 # ─── EMAIL HELPER ────────────────────────────────────────────────────────────
 
+_EMAIL_TEMPLATE = """
+<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px;
+            background:#1A1A1A;border-radius:12px;color:#F5F5DC">
+  <div style="text-align:center;margin-bottom:24px">
+    <span style="font-size:40px">🕯️</span>
+    <h2 style="color:#D4A574;font-family:Georgia,serif;margin:8px 0 4px">
+      Reset your password
+    </h2>
+    <p style="color:#E8E8D0;margin:0">echon.app — your family space</p>
+  </div>
+  <p style="color:#E8E8D0">
+    Click the button below to set a new password.
+    This link expires in <strong>1 hour</strong>.
+  </p>
+  <div style="text-align:center;margin:28px 0">
+    <a href="{reset_url}"
+       style="display:inline-block;background:#D4A574;color:#0A0A0A;
+              padding:14px 32px;border-radius:8px;text-decoration:none;
+              font-weight:bold;font-size:16px">
+      Reset Password
+    </a>
+  </div>
+  <p style="color:#888;font-size:12px;border-top:1px solid #3E2723;padding-top:16px">
+    If you didn't request this, you can safely ignore this email.<br>
+    Or copy this link: {reset_url}
+  </p>
+</div>
+"""
+
+
 def _send_reset_email(to_email: str, reset_url: str) -> bool:
     """
-    Send password-reset email.
-    Uses SendGrid if SENDGRID_API_KEY is configured.
-    Falls back to logging the URL (useful before email is configured).
-    Returns True if sent, False if only logged.
+    Send password-reset email via Resend (preferred) or SendGrid.
+    Returns True if successfully sent, False if no provider is configured.
     """
-    if not settings.SENDGRID_API_KEY:
-        logger.warning(
-            "No SENDGRID_API_KEY set — reset link for %s: %s",
-            to_email, reset_url
-        )
-        return False
+    import urllib.request
+    import json as _json
 
-    try:
-        import urllib.request, json as _json
-        payload = _json.dumps({
-            "personalizations": [{"to": [{"email": to_email}]}],
-            "from": {"email": settings.FROM_EMAIL, "name": "Echon"},
-            "subject": "Reset your Echon password",
-            "content": [{"type": "text/html", "value": f"""
-<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px">
-  <h2 style="color:#c9a84c">Reset your Echon password</h2>
-  <p>Click the button below to set a new password. This link expires in <strong>1 hour</strong>.</p>
-  <a href="{reset_url}"
-     style="display:inline-block;background:#c9a84c;color:#1a1207;padding:12px 24px;
-            border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
-    Reset Password
-  </a>
-  <p style="color:#888;font-size:12px">If you didn't request this, ignore this email.</p>
-  <p style="color:#888;font-size:12px">Or copy this link:<br>{reset_url}</p>
-</div>"""}],
-        }).encode()
-        req = urllib.request.Request(
-            "https://api.sendgrid.com/v3/mail/send",
-            data=payload,
-            headers={
-                "Authorization": f"Bearer {settings.SENDGRID_API_KEY}",
-                "Content-Type": "application/json",
-            },
-            method="POST",
-        )
-        with urllib.request.urlopen(req, timeout=10) as resp:
-            return resp.status in (200, 202)
-    except Exception:
-        logger.exception("SendGrid send failed for %s", to_email)
-        return False
+    html = _EMAIL_TEMPLATE.format(reset_url=reset_url)
+
+    # ── Resend ────────────────────────────────────────────────────────────────
+    if settings.RESEND_API_KEY:
+        try:
+            payload = _json.dumps({
+                "from": f"Echon <{settings.FROM_EMAIL}>",
+                "to": [to_email],
+                "subject": "Reset your Echon password",
+                "html": html,
+            }).encode()
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                data=payload,
+                headers={
+                    "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return resp.status in (200, 201)
+        except Exception:
+            logger.exception("Resend send failed for %s", to_email)
+            return False
+
+    # ── SendGrid fallback ─────────────────────────────────────────────────────
+    if settings.SENDGRID_API_KEY:
+        try:
+            payload = _json.dumps({
+                "personalizations": [{"to": [{"email": to_email}]}],
+                "from": {"email": settings.FROM_EMAIL, "name": "Echon"},
+                "subject": "Reset your Echon password",
+                "content": [{"type": "text/html", "value": html}],
+            }).encode()
+            req = urllib.request.Request(
+                "https://api.sendgrid.com/v3/mail/send",
+                data=payload,
+                headers={
+                    "Authorization": f"Bearer {settings.SENDGRID_API_KEY}",
+                    "Content-Type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                return resp.status in (200, 202)
+        except Exception:
+            logger.exception("SendGrid send failed for %s", to_email)
+            return False
+
+    # No provider configured — log the link server-side only
+    logger.warning("No email provider configured. Reset link for %s: %s", to_email, reset_url)
+    return False
 
 
 # ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
@@ -315,8 +359,8 @@ def forgot_password(
 ):
     """
     Request a password reset link.
-    Always returns 200 to avoid email enumeration.
-    Sends email if SendGrid is configured; otherwise logs the link.
+    Always returns the same 200 response to avoid email enumeration.
+    Sends email via Resend or SendGrid when configured.
     """
     user = db.query(User).filter(User.email == data.email).first()
 
@@ -327,15 +371,9 @@ def forgot_password(
         db.commit()
 
         reset_url = f"https://echon.app/reset-password/{token}"
-        email_sent = _send_reset_email(user.email, reset_url)
-
-        if not email_sent:
-            # No email configured — return the URL directly so the user can act on it
-            # (useful until SendGrid key is added)
-            return {
-                "message": "no_email_configured",
-                "reset_url": reset_url,
-            }
+        _send_reset_email(user.email, reset_url)
+        # Note: we return the same message whether email was sent or not,
+        # to avoid leaking whether an account exists.
 
     return {"message": "If that email is registered, a reset link has been sent."}
 

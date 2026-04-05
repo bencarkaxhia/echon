@@ -310,10 +310,7 @@ export const authApi = {
     return response.data;
   },
 
-  forgotPassword: async (email: string): Promise<{
-    message: string;
-    reset_url?: string;
-  }> => {
+  forgotPassword: async (email: string): Promise<{ message: string }> => {
     const response = await api.post('/api/auth/forgot-password', { email });
     return response.data;
   },
