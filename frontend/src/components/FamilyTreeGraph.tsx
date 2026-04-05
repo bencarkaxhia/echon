@@ -18,6 +18,8 @@ import ReactFlow, {
   useReactFlow,
   ReactFlowProvider,
   NodeMouseHandler,
+  Handle,
+  Position,
 } from 'reactflow';
 import dagre from 'dagre';
 import 'reactflow/dist/style.css';
@@ -164,36 +166,42 @@ function PersonNode({ data }: { data: { node: FamilyTree['nodes'][number]; isCur
   const { node } = data;
   const isMe = data.isCurrentUser;
   return (
-    <div
-      className={`
-        flex flex-col items-center gap-1 px-3 py-2 rounded-xl border-2 shadow-lg cursor-pointer
-        hover:scale-105 transition-transform select-none
-        ${isMe
-          ? 'bg-gradient-to-br from-echon-gold to-echon-candle border-echon-gold text-echon-shadow'
-          : 'bg-gradient-to-br from-echon-shadow to-echon-wood border-echon-wood/60 text-echon-cream hover:border-echon-gold/60'}
-      `}
-      style={{ width: NODE_W, minHeight: NODE_H }}
-    >
-      {node.profile_photo_url ? (
-        <img
-          src={getMediaUrl(node.profile_photo_url)}
-          alt={node.name}
-          className="w-12 h-12 rounded-full object-cover border-2 border-white/30 shrink-0"
-        />
-      ) : (
-        <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl border-2 border-white/20 shrink-0 font-bold
-          ${isMe ? 'bg-echon-shadow/30' : 'bg-echon-wood/50'}`}>
-          {node.name.charAt(0).toUpperCase()}
-        </div>
-      )}
-      <p className="text-xs font-bold text-center leading-tight w-full truncate px-1">
-        {node.name}
-      </p>
-      {isMe && <p className="text-[9px] font-black tracking-widest opacity-70">YOU</p>}
-      {node.birth_date && (
-        <p className="text-[9px] opacity-60">{new Date(node.birth_date).getFullYear()}</p>
-      )}
-    </div>
+    <>
+      {/* ReactFlow connection handles — invisible but required for edge routing */}
+      <Handle type="target" position={Position.Top}    style={{ opacity: 0, pointerEvents: 'none' }} />
+      <Handle type="source" position={Position.Bottom} style={{ opacity: 0, pointerEvents: 'none' }} />
+
+      <div
+        className={`
+          flex flex-col items-center gap-1 px-3 py-2 rounded-xl border-2 shadow-lg cursor-pointer
+          hover:scale-105 transition-transform select-none
+          ${isMe
+            ? 'bg-gradient-to-br from-echon-gold to-echon-candle border-echon-gold text-echon-shadow'
+            : 'bg-gradient-to-br from-echon-shadow to-echon-wood border-echon-wood/60 text-echon-cream hover:border-echon-gold/60'}
+        `}
+        style={{ width: NODE_W, minHeight: NODE_H }}
+      >
+        {node.profile_photo_url ? (
+          <img
+            src={getMediaUrl(node.profile_photo_url)}
+            alt={node.name}
+            className="w-12 h-12 rounded-full object-cover border-2 border-white/30 shrink-0"
+          />
+        ) : (
+          <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl border-2 border-white/20 shrink-0 font-bold
+            ${isMe ? 'bg-echon-shadow/30' : 'bg-echon-wood/50'}`}>
+            {node.name.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <p className="text-xs font-bold text-center leading-tight w-full truncate px-1">
+          {node.name}
+        </p>
+        {isMe && <p className="text-[9px] font-black tracking-widest opacity-70">YOU</p>}
+        {node.birth_date && (
+          <p className="text-[9px] opacity-60">{new Date(node.birth_date).getFullYear()}</p>
+        )}
+      </div>
+    </>
   );
 }
 
