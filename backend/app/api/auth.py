@@ -7,12 +7,29 @@ from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 from datetime import datetime
+from typing import Optional
+import logging
 
 from ..core.database import get_db
 from ..core.security import verify_password, get_password_hash, create_access_token, decode_access_token
 from ..core.storage import save_image, get_file_url, FileUploadError
 from ..models.user import User
 from ..schemas.auth import UserRegister, UserLogin, LoginResponse, UserResponse
+from pydantic import BaseModel, Field, field_validator
+
+logger = logging.getLogger(__name__)
+
+
+class ProfileUpdate(BaseModel):
+    birth_year: Optional[int] = Field(None, ge=1900, le=2100)
+    birth_location: Optional[str] = Field(None, max_length=200)
+
+    @field_validator("birth_year")
+    @classmethod
+    def year_not_future(cls, v: Optional[int]) -> Optional[int]:
+        if v is not None and v > datetime.utcnow().year:
+            raise ValueError("Birth year cannot be in the future")
+        return v
 
 router = APIRouter()
 security = HTTPBearer()
@@ -37,12 +54,12 @@ def get_current_user(
             detail="Invalid or expired token"
         )
     
-    user = db.query(User).filter(User.id == user_id).first()
-    
+    user = db.query(User).filter(User.id == user_id, User.is_active == True).first()
+
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found"
+            detail="User not found or account deactivated"
         )
     
     # Update last active timestamp
@@ -163,6 +180,25 @@ def get_me(current_user: User = Depends(get_current_user)):
     return UserResponse.model_validate(current_user)
 
 
+# --- UPDATE PROFILE ---
+
+@router.patch("/me", response_model=UserResponse)
+def update_me(
+    updates: ProfileUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update birth_year and/or birth_location for the current user."""
+    if updates.birth_year is not None:
+        current_user.birth_year = updates.birth_year
+    if updates.birth_location is not None:
+        current_user.birth_location = updates.birth_location
+    current_user.last_active = datetime.utcnow()
+    db.commit()
+    db.refresh(current_user)
+    return UserResponse.model_validate(current_user)
+
+
 # --- LOGOUT (Client-side) ---
 # Note: JWT logout is handled on the frontend by deleting the token
 # No backend endpoint needed (tokens expire automatically)
@@ -200,8 +236,9 @@ async def upload_profile_photo(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
-    except Exception as e:
+    except Exception:
+        logger.exception("Photo upload failed for user %s", current_user.id)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Upload failed: {str(e)}"
+            detail="Upload failed — please try again"
         )

@@ -9,7 +9,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { familyApi, MemberProfile as MemberProfileType, authApi } from '../lib/api';
-import { getCurrentSpace, getCurrentUser } from '../lib/auth';
+import { getCurrentSpace, getCurrentUser, setCurrentUser } from '../lib/auth';
 import ChangePassword from '../components/ChangePassword';
 import { getMediaUrl } from '../lib/api';
 
@@ -108,10 +108,14 @@ export default function MemberProfile() {
       const formData = new FormData();
       formData.append('file', file);
 
-      // const response = await authApi.uploadProfilePhoto(formData);   // response not used, so const response not needed
-      await authApi.uploadProfilePhoto(formData);
-      
-      // Reload member data to show new photo
+      const result = await authApi.uploadProfilePhoto(formData);
+
+      // Keep localStorage in sync so the door-scene avatar updates immediately
+      const stored = getCurrentUser();
+      if (stored && stored.id === memberId) {
+        setCurrentUser({ ...stored, profile_photo_url: result.profile_photo_url });
+      }
+
       loadMember();
     } catch (error: any) {
       console.error('Failed to upload photo:', error);

@@ -62,6 +62,7 @@ from .api.stories import router as stories_router
 from .api.activity import router as activity_router
 from .api.invitations import router as invitations_router
 from .api.chat import router as chat_router
+from .api.presence import router as presence_router
 from .api.search import router as search_router
 from .api.relationships import router as relationships_router
 from .api.notifications import router as notifications_router
@@ -74,6 +75,7 @@ app.include_router(stories_router, prefix="/api/stories", tags=["stories"])
 app.include_router(activity_router, prefix="/api/activity", tags=["activity"])
 app.include_router(invitations_router, prefix="/api/invitations", tags=["invitations"])
 app.include_router(chat_router, prefix="/api/chat", tags=["chat"])
+app.include_router(presence_router, prefix="/api/presence", tags=["presence"])
 app.include_router(search_router, prefix="/api/search", tags=["search"])
 app.include_router(relationships_router, prefix="/api/relationships", tags=["relationships"])
 app.include_router(notifications_router, prefix="/api/notifications", tags=["notifications"])

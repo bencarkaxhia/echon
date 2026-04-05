@@ -7,13 +7,38 @@ PATH: echon/backend/app/api/spaces.py
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import List
+from typing import List, Optional
 import re
+import logging
+
+from pydantic import BaseModel, Field, field_validator
 
 from ..core.database import get_db
 from ..models import FamilySpace, SpaceMember, User
 from ..schemas.space import SpaceCreate, SpaceResponse, SpaceMemberResponse
 from .auth import get_current_user
+
+logger = logging.getLogger(__name__)
+
+_HEX_COLOR_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
+
+
+class SpaceUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    secondary_name: Optional[str] = Field(None, max_length=100)
+    origin_location: Optional[str] = Field(None, max_length=200)
+    origin_cities: Optional[str] = Field(None, max_length=500)
+    color_primary: Optional[str] = Field(None, max_length=7)
+    color_secondary: Optional[str] = Field(None, max_length=7)
+
+    @field_validator("color_primary", "color_secondary", mode="before")
+    @classmethod
+    def validate_hex_color(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        if not _HEX_COLOR_RE.match(v):
+            raise ValueError("Color must be a valid hex value e.g. #A1B2C3")
+        return v.upper()
 
 router = APIRouter()
 
@@ -142,6 +167,79 @@ def get_space(
         )
     
     return SpaceResponse.model_validate(space)
+
+
+# --- UPDATE SPACE SETTINGS ---
+
+@router.patch("/{space_id}", response_model=SpaceResponse)
+def update_space(
+    space_id: str,
+    updates: SpaceUpdate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update space name, colors, etc. Only founders can do this."""
+    space = db.query(FamilySpace).filter(FamilySpace.id == space_id).first()
+    if not space:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Space not found")
+
+    membership = db.query(SpaceMember).filter(
+        SpaceMember.user_id == current_user.id,
+        SpaceMember.space_id == space_id,
+        SpaceMember.is_active == True,
+    ).first()
+    if not membership or membership.role != "founder":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only founders can update space settings")
+
+    if updates.name is not None:
+        space.name = updates.name
+    if updates.secondary_name is not None:
+        space.secondary_name = updates.secondary_name
+    if updates.origin_location is not None:
+        space.origin_location = updates.origin_location
+    if updates.origin_cities is not None:
+        space.origin_cities = updates.origin_cities
+    if updates.color_primary is not None:
+        space.color_primary = updates.color_primary
+    if updates.color_secondary is not None:
+        space.color_secondary = updates.color_secondary
+
+    db.commit()
+    db.refresh(space)
+    return SpaceResponse.model_validate(space)
+
+
+# --- REMOVE MEMBER ---
+
+@router.delete("/{space_id}/members/{member_user_id}", status_code=status.HTTP_204_NO_CONTENT)
+def remove_member(
+    space_id: str,
+    member_user_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Remove a member from the space. Founders only. Cannot remove other founders."""
+    membership = db.query(SpaceMember).filter(
+        SpaceMember.user_id == current_user.id,
+        SpaceMember.space_id == space_id,
+        SpaceMember.is_active == True,
+    ).first()
+    if not membership or membership.role != "founder":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Only founders can remove members")
+
+    target = db.query(SpaceMember).filter(
+        SpaceMember.user_id == member_user_id,
+        SpaceMember.space_id == space_id,
+        SpaceMember.is_active == True,
+    ).first()
+    if not target:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Member not found")
+    if target.role == "founder":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Cannot remove a founder")
+
+    target.is_active = False
+    db.commit()
+    return None
 
 
 # --- UPDATE SPACE EMBLEM ---

@@ -5,12 +5,15 @@
  */
 
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { logout, getCurrentUser } from '../lib/auth';
 import RotatingSphere from './RotatingSphere';
 import { getMediaUrl } from '../lib/api';
 import NotificationBell from './NotificationBell';
+import { useSpacePresence } from '../hooks/useSpacePresence';
+import SpaceSettingsPanel from './SpaceSettingsPanel';
+import { FamilySpace } from '../lib/api';
 
 
 interface Door {
@@ -61,13 +64,17 @@ const doors: Door[] = [
 interface DoorSceneProps {
   familyName: string;
   emblemUrl?: string;
+  spaceData?: FamilySpace;
+  onSpaceUpdated?: (updated: FamilySpace) => void;
 }
 
-export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
+export default function DoorScene({ familyName, emblemUrl, spaceData, onSpaceUpdated }: DoorSceneProps) {
   const navigate = useNavigate();
   const [hoveredDoor, setHoveredDoor] = useState<string | null>(null);
   const [currentEmblem, setCurrentEmblem] = useState(emblemUrl);
+  const [showSettings, setShowSettings] = useState(false);
   const currentUser = getCurrentUser();
+  const presentUsers = useSpacePresence();
 
   const handleDoorClick = (route: string) => {
     // Could add a door opening animation here before navigating
@@ -86,13 +93,15 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
       {/* Vignette / subtle atmosphere */}
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(212,175,55,0.15),transparent_55%),radial-gradient(circle_at_bottom,rgba(0,0,0,0.8),transparent_60%)]" />
 
-      {/* User Info - Top Left */}
+      {/* User Info - Top Left (clickable → own profile) */}
       {currentUser && (
-        <motion.div
+        <motion.button
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: 1 }}
-          className="absolute top-4 left-4 z-50 flex items-center gap-3 px-4 py-2 bg-echon-shadow/80 backdrop-blur-sm border border-echon-wood rounded-lg"
+          onClick={() => navigate(`/space/family/${currentUser.id}`)}
+          title="View / edit your profile"
+          className="absolute top-4 left-4 z-50 flex items-center gap-3 px-4 py-2 bg-echon-shadow/80 backdrop-blur-sm border border-echon-wood rounded-lg hover:border-echon-gold transition-colors group"
         >
           <div className="w-8 h-8 rounded-full bg-echon-shadow border border-echon-gold flex items-center justify-center overflow-hidden">
             {currentUser.profile_photo_url ? (
@@ -107,13 +116,15 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
               </span>
             )}
           </div>
-          <div>
+          <div className="text-left">
             <p className="text-echon-cream text-sm font-semibold">
               {currentUser.name}
             </p>
-            <p className="text-echon-cream-dark text-xs">Logged in</p>
+            <p className="text-echon-cream-dark text-xs group-hover:text-echon-gold transition-colors">
+              Edit profile
+            </p>
           </div>
-        </motion.div>
+        </motion.button>
       )}
 
       {/* Top Right - Notifications & Logout */}
@@ -126,6 +137,15 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
         <div className="bg-echon-shadow border border-echon-wood rounded-lg px-2 py-2">
           <NotificationBell />
         </div>
+        {spaceData && (
+          <button
+            onClick={() => setShowSettings(true)}
+            title="Space settings"
+            className="px-3 py-2 bg-echon-shadow border border-echon-wood rounded-lg text-echon-cream-dark hover:text-echon-cream hover:border-echon-gold transition-colors text-sm"
+          >
+            ⚙
+          </button>
+        )}
         <button onClick={handleLogout}
         className="px-4 py-2 bg-echon-shadow border border-echon-wood rounded-lg text-echon-cream hover:bg-echon-wood hover:border-echon-gold transition-colors"
         >
@@ -302,6 +322,76 @@ export default function DoorScene({ familyName, emblemUrl }: DoorSceneProps) {
           </button>
         </motion.div>
       ))}
+
+      {/* ── Who's home now ── */}
+      <AnimatePresence>
+        {presentUsers.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 12 }}
+            transition={{ delay: 1.5, duration: 0.6 }}
+            className="absolute bottom-20 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+          >
+            <p className="text-echon-cream-dark text-[10px] tracking-widest uppercase">
+              Home now
+            </p>
+            <div className="flex items-center -space-x-2">
+              {presentUsers.slice(0, 7).map((u, i) => (
+                <motion.div
+                  key={u.user_id}
+                  initial={{ opacity: 0, scale: 0.5 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.5 }}
+                  transition={{ delay: i * 0.08, duration: 0.35 }}
+                  title={u.user_name}
+                  className="relative w-9 h-9 rounded-full border-2 border-echon-gold bg-echon-shadow flex items-center justify-center overflow-hidden"
+                  style={{ zIndex: presentUsers.length - i }}
+                >
+                  {/* Subtle pulse ring */}
+                  <motion.div
+                    animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
+                    transition={{ duration: 2.5, repeat: Infinity, delay: i * 0.3 }}
+                    className="absolute inset-0 rounded-full border border-echon-gold/50"
+                  />
+                  {u.user_photo ? (
+                    <img
+                      src={getMediaUrl(u.user_photo)}
+                      alt={u.user_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-echon-gold text-sm font-semibold">
+                      {u.user_name.charAt(0)}
+                    </span>
+                  )}
+                </motion.div>
+              ))}
+              {presentUsers.length > 7 && (
+                <div className="w-9 h-9 rounded-full border-2 border-echon-gold bg-echon-shadow flex items-center justify-center">
+                  <span className="text-echon-gold text-[10px] font-semibold">
+                    +{presentUsers.length - 7}
+                  </span>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ── Space Settings Panel ── */}
+      <AnimatePresence>
+        {showSettings && spaceData && (
+          <SpaceSettingsPanel
+            space={spaceData}
+            onClose={() => setShowSettings(false)}
+            onSpaceUpdated={(updated) => {
+              onSpaceUpdated?.(updated);
+              setShowSettings(false);
+            }}
+          />
+        )}
+      </AnimatePresence>
 
       {/* Instructions */}
       <motion.div

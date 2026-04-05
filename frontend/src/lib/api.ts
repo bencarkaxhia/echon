@@ -289,6 +289,14 @@ export const authApi = {
     return response.data;
   },
 
+  updateProfile: async (data: {
+    birth_year?: number;
+    birth_location?: string;
+  }): Promise<User> => {
+    const response = await api.patch('/api/auth/me', data);
+    return response.data;
+  },
+
   updatePassword: async (currentPassword: string, newPassword: string): Promise<{
     message: string;
   }> => {
@@ -335,6 +343,22 @@ export const spaceApi = {
       },
     });
     return response.data;
+  },
+
+  updateSpace: async (spaceId: string, data: {
+    name?: string;
+    secondary_name?: string;
+    origin_location?: string;
+    origin_cities?: string;
+    color_primary?: string;
+    color_secondary?: string;
+  }): Promise<FamilySpace> => {
+    const response = await api.patch(`/api/spaces/${spaceId}`, data);
+    return response.data;
+  },
+
+  removeMember: async (spaceId: string, memberUserId: string): Promise<void> => {
+    await api.delete(`/api/spaces/${spaceId}/members/${memberUserId}`);
   },
 };
 
