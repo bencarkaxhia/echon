@@ -606,6 +606,7 @@ export const invitationsApi = {
     email?: string;
     phone?: string;
     password: string;
+    relationship_override?: string;
   }): Promise<{
     access_token: string;
     token_type: string;
@@ -626,6 +627,7 @@ export const invitationsApi = {
     personal_message: string | null;
     expires_at: string;
     already_used: boolean;
+    relationship: string | null;
   }> => {
     const response = await api.get(`/api/invitations/preview/${token}`);
     return response.data;

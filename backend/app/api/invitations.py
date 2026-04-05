@@ -14,7 +14,7 @@ import string
 
 from ..core.database import get_db
 from ..core.security import verify_password, get_password_hash, create_access_token
-from ..models import User, FamilySpace, SpaceMember, Invitation
+from ..models import User, FamilySpace, SpaceMember, Invitation, Relationship
 from ..schemas.auth import LoginResponse, UserResponse
 from .auth import get_current_user
 from .notification_helpers import notify_space_members      # Notify space members after new member added to space
@@ -29,6 +29,7 @@ class RegisterAndJoinRequest(BaseModel):
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
     password: str = Field(..., min_length=8, max_length=128)
+    relationship_override: Optional[str] = None  # Invitee can confirm/change the relationship
 
 
 def generate_invitation_code() -> str:
@@ -60,6 +61,7 @@ def preview_invitation(token: str, db: Session = Depends(get_db)):
         "personal_message": invitation.personal_message,
         "expires_at": invitation.expires_at.isoformat(),
         "already_used": invitation.accepted_by is not None,
+        "relationship": invitation.relationship_to_inviter,
     }
 
 
@@ -316,10 +318,10 @@ def get_pending_approvals(
         SpaceMember.is_active == True
     ).first()
     
-    if not membership or membership.role != "founder":
+    if not membership or membership.role not in ["founder", "elder"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only founders can view pending approvals"
+            detail="Only founders and elders can view pending approvals"
         )
     
     # Get pending memberships
@@ -369,10 +371,10 @@ def approve_membership(
         SpaceMember.is_active == True
     ).first()
     
-    if not admin_membership or admin_membership.role != "founder":
+    if not admin_membership or admin_membership.role not in ["founder", "elder"]:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Only founders can approve memberships"
+            detail="Only founders and elders can approve memberships"
         )
     
     # Get pending membership
@@ -390,10 +392,38 @@ def approve_membership(
     if approve:
         # APPROVE - Activate membership
         membership.is_active = True
+
+        # Auto-create family Relationship record if a relationship type was stored
+        if membership.relationship_to_founder:
+            # Find the invitation to get inviter's user_id
+            invitation = db.query(Invitation).filter(
+                Invitation.accepted_by == membership.user_id,
+                Invitation.space_id == space_id
+            ).first()
+            inviter_user_id = invitation.invited_by if invitation else current_user.id
+
+            # Only create if both people are different and relationship not already recorded
+            if str(inviter_user_id) != str(membership.user_id):
+                existing_rel = db.query(Relationship).filter(
+                    Relationship.space_id == space_id,
+                    Relationship.person_a_id == membership.user_id,
+                    Relationship.person_b_id == inviter_user_id,
+                ).first()
+                if not existing_rel:
+                    new_rel = Relationship(
+                        space_id=space_id,
+                        person_a_id=membership.user_id,
+                        person_b_id=inviter_user_id,
+                        relationship_type=membership.relationship_to_founder,
+                        confidence_level="confirmed",
+                        created_by=current_user.id,
+                    )
+                    db.add(new_rel)
+
         db.commit()
-        
+
         user = db.query(User).filter(User.id == membership.user_id).first()
-        
+
         return {
             "status": "approved",
             "message": f"{user.name} has been approved to join the space",
@@ -483,13 +513,16 @@ def register_and_join(data: RegisterAndJoinRequest, db: Session = Depends(get_db
     db.add(new_user)
     db.flush()  # get new_user.id without committing yet
 
+    # Use the invitee's confirmed/corrected relationship if provided, else fall back to inviter's choice
+    final_relationship = data.relationship_override or invitation.relationship_to_inviter
+
     # Create pending membership
     new_membership = SpaceMember(
         space_id=invitation.space_id,
         user_id=new_user.id,
         role="member",
         is_active=False,  # Pending approval
-        relationship_to_founder=invitation.relationship_to_inviter,
+        relationship_to_founder=final_relationship,
     )
     db.add(new_membership)
 

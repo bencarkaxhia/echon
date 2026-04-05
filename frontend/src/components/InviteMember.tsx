@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { invitationsApi } from '../lib/api';
 import { getCurrentSpace } from '../lib/auth';
+import { groupedRelationshipTypes } from '../lib/relationshipTypes';
 
 interface InviteMemberProps {
   onClose: () => void;
@@ -133,15 +134,24 @@ Looking forward to having you with us!`;
 
               <div>
                 <label className="block text-echon-cream text-sm mb-2">
-                  Relationship (Optional)
+                  Their relationship to you (Optional)
                 </label>
-                <input
-                  type="text"
+                <select
                   value={inviteeInfo.relationship}
                   onChange={(e) => setInviteeInfo({ ...inviteeInfo, relationship: e.target.value })}
                   className="echon-input"
-                  placeholder="Mother, Father, Sister, Brother..."
-                />
+                >
+                  <option value="">— Select relationship —</option>
+                  {Object.entries(groupedRelationshipTypes()).map(([category, types]) => (
+                    <optgroup key={category} label={category}>
+                      {types.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.emoji} {t.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
               </div>
 
               <div>

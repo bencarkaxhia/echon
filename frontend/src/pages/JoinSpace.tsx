@@ -14,6 +14,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { invitationsApi } from '../lib/api';
 import { setAuthToken, setCurrentUser } from '../lib/auth';
+import { groupedRelationshipTypes, relationshipLabel } from '../lib/relationshipTypes';
 
 type Preview = {
   valid: boolean;
@@ -22,6 +23,7 @@ type Preview = {
   personal_message: string | null;
   expires_at: string;
   already_used: boolean;
+  relationship: string | null;
 };
 
 export default function JoinSpace() {
@@ -36,6 +38,7 @@ export default function JoinSpace() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [relationship, setRelationship] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [fieldError, setFieldError] = useState('');
   const [joined, setJoined] = useState(false);
@@ -53,6 +56,7 @@ export default function JoinSpace() {
         setPreview(data);
         // Pre-fill name from invite if provided
         if (data.invitee_name) setName(data.invitee_name);
+        if (data.relationship) setRelationship(data.relationship);
       })
       .catch(() => setPreviewError('This invitation link is invalid or has expired.'))
       .finally(() => setLoadingPreview(false));
@@ -82,6 +86,7 @@ export default function JoinSpace() {
         name,
         email,
         password,
+        relationship_override: relationship || undefined,
       });
 
       setAuthToken(result.access_token);
@@ -224,6 +229,47 @@ export default function JoinSpace() {
                 placeholder="Your full name"
                 required
               />
+            </div>
+
+            {/* Relationship confirmation */}
+            <div>
+              <label className="block text-echon-cream text-sm mb-1">
+                Your relationship to the inviter
+              </label>
+              {preview.relationship && relationship === preview.relationship ? (
+                <div className="flex items-center gap-2">
+                  <div className="echon-input flex-1 text-echon-gold">
+                    {relationshipLabel(relationship)}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setRelationship('')}
+                    className="text-xs text-echon-cream-dark underline shrink-0"
+                  >
+                    Change
+                  </button>
+                </div>
+              ) : (
+                <select
+                  value={relationship}
+                  onChange={(e) => setRelationship(e.target.value)}
+                  className="echon-input"
+                >
+                  <option value="">— Confirm or select relationship —</option>
+                  {Object.entries(groupedRelationshipTypes()).map(([category, types]) => (
+                    <optgroup key={category} label={category}>
+                      {types.map((t) => (
+                        <option key={t.value} value={t.value}>
+                          {t.emoji} {t.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              )}
+              <p className="text-echon-cream-dark/60 text-xs mt-1">
+                This is how you appear in the family tree.
+              </p>
             </div>
 
             <div>

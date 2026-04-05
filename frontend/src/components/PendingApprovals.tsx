@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { invitationsApi } from '../lib/api';
 import { getCurrentSpace } from '../lib/auth';
+import { relationshipLabel } from '../lib/relationshipTypes';
 
 interface SentInvitation {
   id: string;
@@ -77,8 +78,9 @@ export default function PendingApprovals({ onClose, onApproved }: PendingApprova
     }
   };
 
-  const handleCopyCode = (token: string) => {
-    const msg = `You're invited to join our family space on Echon!\n\nYour invitation code: ${token}\n\nOpen https://echon.app/register?join=1 and enter the code to join.`;
+  const handleCopyCode = (token: string, name: string) => {
+    const link = `${window.location.origin}/join/${token}`;
+    const msg = `${name}, you're invited to join our family space on Echon!\n\nTap the link to register:\n${link}`;
     navigator.clipboard.writeText(msg);
     setCopied(token);
     setTimeout(() => setCopied(null), 2000);
@@ -193,13 +195,13 @@ export default function PendingApprovals({ onClose, onApproved }: PendingApprova
                       <p className="text-echon-cream font-semibold">{inv.invitee_name}</p>
                       <p className="text-echon-cream-dark text-sm truncate">{inv.invitee_contact}</p>
                       {inv.relationship && (
-                        <p className="text-echon-gold text-xs mt-0.5">{inv.relationship}</p>
+                        <p className="text-echon-gold text-xs mt-0.5">{relationshipLabel(inv.relationship)}</p>
                       )}
                       <p className="text-echon-cream-dark/50 text-xs mt-1 font-mono">{inv.token}</p>
                     </div>
                     <div className="flex flex-col gap-1.5 shrink-0">
                       <button
-                        onClick={() => handleCopyCode(inv.token)}
+                        onClick={() => handleCopyCode(inv.token, inv.invitee_name)}
                         className="px-3 py-1.5 text-xs bg-echon-gold/15 border border-echon-gold/30 text-echon-gold rounded-lg hover:bg-echon-gold/25 transition-colors"
                       >
                         {copied === inv.token ? '✓ Copied' : '📋 Copy'}
@@ -243,7 +245,7 @@ export default function PendingApprovals({ onClose, onApproved }: PendingApprova
                         {member.user_email && <p>📧 {member.user_email}</p>}
                         {member.user_phone && <p>📱 {member.user_phone}</p>}
                         {member.relationship && (
-                          <p className="text-echon-gold">👨‍👩‍👧‍👦 {member.relationship}</p>
+                          <p className="text-echon-gold">👨‍👩‍👧‍👦 {relationshipLabel(member.relationship)}</p>
                         )}
                         <p className="text-xs text-echon-cream-dark/60">
                           Requested: {new Date(member.joined_at).toLocaleDateString()}
