@@ -103,6 +103,7 @@ export default function NotificationBell() {
       birthday: '🎂',
       new_story: '🎙️',
       member_joined: '👋',
+      chat_mention: '@',
     };
     return icons[type] || '🔔';
   };

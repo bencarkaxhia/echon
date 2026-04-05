@@ -14,6 +14,7 @@ from ..core.storage import save_audio, get_file_url, FileUploadError
 from ..models import Post, PostTag, User, SpaceMember
 from ..schemas.story import StoryCreate, StoryResponse, StoryListResponse
 from .auth import get_current_user
+from .notification_helpers import notify_space_members
 
 router = APIRouter()
 
@@ -104,6 +105,23 @@ def create_story(
     db.commit()
     db.refresh(new_story)
     
+    # Notify other space members (non-critical)
+    try:
+        notify_space_members(
+            db=db,
+            space_id=story_data.space_id,
+            exclude_user_id=current_user.id,
+            notification_type="new_story",
+            title=f"{current_user.name} recorded a new story",
+            message=story_data.title[:100] if story_data.title else "A new story was recorded",
+            link_url="/space/stories",
+            actor_id=current_user.id,
+            actor_name=current_user.name,
+            actor_photo=current_user.profile_photo_url,
+        )
+    except Exception:
+        pass
+
     # Add tags if provided
     if story_data.tags:
         for tag_name in story_data.tags:

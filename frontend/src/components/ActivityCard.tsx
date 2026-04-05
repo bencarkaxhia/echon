@@ -19,43 +19,35 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
 
   const getActivityIcon = (type: string) => {
     switch (type) {
-      case 'memory':
-        return '📸';
-      case 'story':
-        return '🎙️';
-      case 'comment':
-        return '💬';
-      case 'reaction':
-        return '❤️';
-      case 'member_joined':
-        return '👋';
-      default:
-        return '📝';
+      case 'memory': return '📸';
+      case 'story': return '🎙️';
+      case 'comment': return '💬';
+      case 'chat': return '💬';
+      case 'reaction': return '❤️';
+      case 'member_joined': return '👋';
+      default: return '📝';
     }
   };
 
   const getActivityText = () => {
     switch (activity.type) {
-      case 'memory':
-        return 'shared a memory';
-      case 'story':
-        return 'recorded a story';
-      case 'comment':
-        return 'commented';
-      case 'reaction':
-        return `reacted with ${activity.content}`;
-      case 'member_joined':
-        return 'joined the family';
-      default:
-        return 'did something';
+      case 'memory': return 'shared a memory';
+      case 'story': return 'recorded a story';
+      case 'comment': return 'commented';
+      case 'chat': return 'said in chat';
+      case 'reaction': return `reacted with ${activity.content}`;
+      case 'member_joined': return 'joined the family';
+      default: return 'posted an update';
     }
   };
 
   const handleClick = () => {
-    if (activity.type === 'memory' && activity.related_id) {
+    if (activity.type === 'memory') {
       navigate('/space/memories');
-    } else if (activity.type === 'story' && activity.related_id) {
+    } else if (activity.type === 'story') {
       navigate('/space/stories');
+    } else if (activity.type === 'chat') {
+      navigate('/space/chat');
     } else if (activity.type === 'member_joined' && activity.related_id) {
       navigate(`/space/family/${activity.related_id}`);
     }

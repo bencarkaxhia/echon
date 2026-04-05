@@ -222,7 +222,7 @@ export interface StoryListResponse {
 
 export interface ActivityItem {
   id: string;
-  type: string; // "memory", "story", "comment", "reaction", "member_joined"
+  type: string; // "memory", "story", "comment", "reaction", "chat", "member_joined"
   space_id: string;
   user_id: string;
   content?: string;
@@ -597,6 +597,25 @@ export const invitationsApi = {
     const response = await api.post('/api/invitations/join-with-code', null, {
       params: { invitation_code: invitationCode },
     });
+    return response.data;
+  },
+
+  registerAndJoin: async (data: {
+    invitation_code: string;
+    name: string;
+    email?: string;
+    phone?: string;
+    password: string;
+  }): Promise<{
+    access_token: string;
+    token_type: string;
+    user: User;
+    space_id: string;
+    space_name: string;
+    status: string;
+    message: string;
+  }> => {
+    const response = await api.post('/api/invitations/register-and-join', data);
     return response.data;
   },
 

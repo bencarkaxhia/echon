@@ -14,9 +14,11 @@ import json
 
 from ..core.database import get_db
 from ..core.security import decode_access_token
+import re
 from ..models import Post, User, SpaceMember
 from ..schemas.chat import ChatMessageCreate, ChatMessage, ChatMessagesResponse
 from .auth import get_current_user
+from .notification_helpers import notify_specific_user
 
 router = APIRouter()
 
@@ -202,6 +204,43 @@ async def send_message(
 
     # Broadcast to all WS clients in this space
     await chat_manager.broadcast(str(message_data.space_id), payload)
+
+    # Detect @mentions and notify the mentioned users (non-critical)
+    try:
+        mentions = re.findall(r'@([\w][\w\s]{0,48})', message_data.content)
+        if mentions:
+            # Get all active space members for matching
+            members_with_users = db.query(SpaceMember, User).join(
+                User, User.id == SpaceMember.user_id
+            ).filter(
+                SpaceMember.space_id == message_data.space_id,
+                SpaceMember.is_active == True,
+                SpaceMember.user_id != current_user.id,
+            ).all()
+
+            notified = set()
+            for mention in mentions:
+                mention_lower = mention.strip().lower()
+                for _, member_user in members_with_users:
+                    if (
+                        member_user.name.lower().startswith(mention_lower)
+                        and str(member_user.id) not in notified
+                    ):
+                        notify_specific_user(
+                            db=db,
+                            user_id=str(member_user.id),
+                            space_id=str(message_data.space_id),
+                            notification_type="chat_mention",
+                            title=f"{current_user.name} mentioned you in chat",
+                            message=message_data.content[:120],
+                            link_url="/space/chat",
+                            actor_id=str(current_user.id),
+                            actor_name=current_user.name,
+                            actor_photo=current_user.profile_photo_url,
+                        )
+                        notified.add(str(member_user.id))
+    except Exception:
+        pass  # Never fail message delivery due to notification errors
 
     return ChatMessage(
         id=str(new_message.id),

@@ -8,15 +8,27 @@ PATH: echon/backend/app/api/invitations.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta
+from typing import Optional
 import secrets
 import string
 
 from ..core.database import get_db
+from ..core.security import verify_password, get_password_hash, create_access_token
 from ..models import User, FamilySpace, SpaceMember, Invitation
+from ..schemas.auth import LoginResponse, UserResponse
 from .auth import get_current_user
 from .notification_helpers import notify_space_members      # Notify space members after new member added to space
+from pydantic import BaseModel, EmailStr, Field
 
 router = APIRouter()
+
+
+class RegisterAndJoinRequest(BaseModel):
+    invitation_code: str
+    name: str = Field(..., min_length=2, max_length=255)
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    password: str = Field(..., min_length=8, max_length=128)
 
 
 def generate_invitation_code() -> str:
@@ -156,7 +168,7 @@ def join_with_code(
     try:
         notify_space_members(
             db=db,
-            space_id=space_id,
+            space_id=str(invitation.space_id),
             exclude_user_id=current_user.id,
             notification_type="member_joined",
             title=f"{current_user.name} joined the family!",
@@ -324,4 +336,91 @@ def get_my_spaces(
     return {
         "spaces": spaces,
         "total": len(spaces)
+    }
+
+
+# --- REGISTER AND JOIN IN ONE STEP ---
+
+@router.post("/register-and-join", response_model=None, status_code=status.HTTP_201_CREATED)
+def register_and_join(data: RegisterAndJoinRequest, db: Session = Depends(get_db)):
+    """
+    Register a new account AND join a family space via invitation code in one step.
+    Creates a pending membership that requires founder approval.
+    Returns: JWT token + user info + space_id + status
+    """
+    # Validate invitation code first (fail fast before creating account)
+    invitation = db.query(Invitation).filter(Invitation.token == data.invitation_code).first()
+    if not invitation:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid invitation code")
+    if not invitation.is_valid():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="This invitation has expired or been used")
+
+    # Must provide email or phone
+    if not data.email and not data.phone:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Must provide either email or phone number")
+
+    # Check email/phone not already registered
+    existing = None
+    if data.email:
+        existing = db.query(User).filter(User.email == data.email).first()
+    if not existing and data.phone:
+        existing = db.query(User).filter(User.phone == data.phone).first()
+    if existing:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User with this email or phone already exists")
+
+    # Create user account
+    new_user = User(
+        name=data.name,
+        email=data.email,
+        phone=data.phone,
+        password_hash=get_password_hash(data.password),
+    )
+    db.add(new_user)
+    db.flush()  # get new_user.id without committing yet
+
+    # Create pending membership
+    new_membership = SpaceMember(
+        space_id=invitation.space_id,
+        user_id=new_user.id,
+        role="member",
+        is_active=False,  # Pending approval
+        relationship_to_founder=invitation.relationship_to_inviter,
+    )
+    db.add(new_membership)
+
+    # Mark invitation as accepted
+    invitation.accepted_by = new_user.id
+    invitation.accepted_at = datetime.utcnow()
+
+    db.commit()
+    db.refresh(new_user)
+
+    # Notify space members (non-critical)
+    try:
+        notify_space_members(
+            db=db,
+            space_id=str(invitation.space_id),
+            exclude_user_id=str(new_user.id),
+            notification_type="member_joined",
+            title=f"{new_user.name} wants to join the family!",
+            message="A new member is waiting for approval",
+            link_url="/space/settings",
+            actor_id=str(new_user.id),
+            actor_name=new_user.name,
+            actor_photo=new_user.profile_photo_url,
+        )
+    except Exception:
+        pass
+
+    space = db.query(FamilySpace).filter(FamilySpace.id == invitation.space_id).first()
+    access_token = create_access_token(data={"sub": str(new_user.id)})
+
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": UserResponse.model_validate(new_user),
+        "space_id": str(invitation.space_id),
+        "space_name": space.name if space else "",
+        "status": "pending_approval",
+        "message": f"Your request to join {space.name if space else 'the family'} is pending approval",
     }

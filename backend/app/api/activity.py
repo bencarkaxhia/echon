@@ -7,11 +7,11 @@ PATH: echon/backend/app/api/activity.py
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import desc, func, or_
+from sqlalchemy import desc
 from datetime import datetime, timedelta
 
 from ..core.database import get_db
-from ..models import Post, Comment, Reaction, User, SpaceMember
+from ..models import Post, Comment, User, SpaceMember
 from ..schemas.activity import (
     ActivityItem, ActivityFeedResponse, QuickUpdateCreate, SpaceStats
 )
@@ -53,19 +53,30 @@ def get_activity_feed(
     
     activities = []
     
-    # Get recent posts (memories & stories)
+    # Get recent posts (memories, stories, and chat messages)
     recent_posts = db.query(Post).filter(
         Post.space_id == space_id,
         Post.is_active == True
-    ).order_by(desc(Post.created_at)).limit(20).all()
-    
+    ).order_by(desc(Post.created_at)).limit(30).all()
+
+    # Batch-load authors
+    author_ids = list({str(p.author_id) for p in recent_posts})
+    authors = {str(u.id): u for u in db.query(User).filter(User.id.in_(author_ids)).all()}
+
     for post in recent_posts:
-        author = db.query(User).filter(User.id == post.author_id).first()
+        author = authors.get(str(post.author_id))
         if not author:
             continue
-        
-        activity_type = "memory" if post.type == "photo" else "story"
-        
+
+        if post.type == "photo":
+            activity_type = "memory"
+        elif post.type == "voice":
+            activity_type = "story"
+        elif post.type == "chat":
+            activity_type = "chat"
+        else:
+            activity_type = "story"
+
         activities.append(ActivityItem(
             id=str(post.id),
             type=activity_type,
@@ -77,7 +88,7 @@ def get_activity_feed(
             user_name=author.name,
             user_photo=author.profile_photo_url,
             preview_url=post.file_url if post.file_url else None,
-            preview_text=post.content[:100] if post.content else None
+            preview_text=post.content[:100] if post.content else None,
         ))
     
     # Get recent comments
@@ -87,12 +98,15 @@ def get_activity_feed(
         Post.space_id == space_id,
         Comment.is_active == True
     ).order_by(desc(Comment.created_at)).limit(20).all()
-    
+
+    comment_author_ids = list({str(c.author_id) for c in recent_comments})
+    comment_authors = {str(u.id): u for u in db.query(User).filter(User.id.in_(comment_author_ids)).all()}
+
     for comment in recent_comments:
-        author = db.query(User).filter(User.id == comment.author_id).first()
+        author = comment_authors.get(str(comment.author_id))
         if not author:
             continue
-        
+
         activities.append(ActivityItem(
             id=str(comment.id),
             type="comment",
@@ -103,44 +117,23 @@ def get_activity_feed(
             created_at=comment.created_at,
             user_name=author.name,
             user_photo=author.profile_photo_url,
-            preview_text=comment.content[:100]
+            preview_text=comment.content[:100],
         ))
     
-    # Get recent reactions
-    recent_reactions = db.query(Reaction).join(
-        Post, Reaction.post_id == Post.id
-    ).filter(
-        Post.space_id == space_id
-    ).order_by(desc(Reaction.created_at)).limit(20).all()
-    
-    for reaction in recent_reactions:
-        user = db.query(User).filter(User.id == reaction.user_id).first()
-        if not user:
-            continue
-        
-        activities.append(ActivityItem(
-            id=str(reaction.id),
-            type="reaction",
-            space_id=str(space_id),
-            user_id=str(reaction.user_id),
-            content=reaction.type,
-            related_id=str(reaction.post_id),
-            created_at=reaction.created_at,
-            user_name=user.name,
-            user_photo=user.profile_photo_url
-        ))
-    
-    # Get recent members
+    # Get recent member joins
     recent_members = db.query(SpaceMember).filter(
         SpaceMember.space_id == space_id,
         SpaceMember.is_active == True
     ).order_by(desc(SpaceMember.joined_at)).limit(10).all()
-    
+
+    member_user_ids = list({str(m.user_id) for m in recent_members})
+    member_users = {str(u.id): u for u in db.query(User).filter(User.id.in_(member_user_ids)).all()}
+
     for membership in recent_members:
-        user = db.query(User).filter(User.id == membership.user_id).first()
+        user = member_users.get(str(membership.user_id))
         if not user:
             continue
-        
+
         activities.append(ActivityItem(
             id=str(membership.id),
             type="member_joined",
@@ -150,7 +143,7 @@ def get_activity_feed(
             related_id=str(user.id),
             created_at=membership.joined_at,
             user_name=user.name,
-            user_photo=user.profile_photo_url
+            user_photo=user.profile_photo_url,
         ))
     
     # Sort all activities by date

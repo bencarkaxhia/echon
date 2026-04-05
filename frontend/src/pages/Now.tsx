@@ -12,6 +12,32 @@ import { activityApi, ActivityItem, SpaceStats } from '../lib/api';
 import { getCurrentSpace } from '../lib/auth';
 import ActivityCard from '../components/ActivityCard';
 
+function getDateLabel(dateStr: string): string {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86400000);
+  if (diffDays === 0) return 'Today';
+  if (diffDays === 1) return 'Yesterday';
+  if (diffDays < 7) return 'This Week';
+  if (diffDays < 30) return 'This Month';
+  return 'Earlier';
+}
+
+function groupActivitiesByDate(items: ActivityItem[]): Array<{ label: string; items: ActivityItem[] }> {
+  const groups: Map<string, ActivityItem[]> = new Map();
+  const order = ['Today', 'Yesterday', 'This Week', 'This Month', 'Earlier'];
+
+  for (const item of items) {
+    const label = getDateLabel(item.created_at);
+    if (!groups.has(label)) groups.set(label, []);
+    groups.get(label)!.push(item);
+  }
+
+  return order
+    .filter((label) => groups.has(label))
+    .map((label) => ({ label, items: groups.get(label)! }));
+}
+
 export default function Now() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
@@ -183,40 +209,40 @@ export default function Now() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-20"
             >
-              <div className="text-8xl mb-6">💬</div>
+              <div className="text-8xl mb-6">🕯️</div>
               <h3 className="text-2xl font-serif text-echon-cream mb-4">
-                No activity yet
+                Nothing yet
               </h3>
               <p className="text-echon-cream-dark mb-8">
                 Start sharing memories, stories, and connecting with family
               </p>
               <div className="flex gap-4 justify-center">
-                <button
-                  onClick={() => navigate('/space/memories')}
-                  className="echon-btn"
-                >
+                <button onClick={() => navigate('/space/memories')} className="echon-btn">
                   📸 Share a Memory
                 </button>
-                <button
-                  onClick={() => navigate('/space/stories')}
-                  className="echon-btn-secondary"
-                >
+                <button onClick={() => navigate('/space/stories')} className="echon-btn-secondary">
                   🎙️ Record a Story
                 </button>
               </div>
             </motion.div>
           ) : (
             <>
-              {activities.map((activity) => (
-                <ActivityCard key={activity.id} activity={activity} />
+              {groupActivitiesByDate(activities).map((group) => (
+                <div key={group.label}>
+                  <p className="text-echon-cream-dark font-serif text-xs uppercase tracking-widest mb-3 mt-6 first:mt-0">
+                    {group.label}
+                  </p>
+                  {group.items.map((activity) => (
+                    <div key={activity.id} className="mb-3">
+                      <ActivityCard activity={activity} />
+                    </div>
+                  ))}
+                </div>
               ))}
 
               {hasMore && (
                 <div className="text-center pt-8">
-                  <button
-                    onClick={loadMore}
-                    className="echon-btn-secondary"
-                  >
+                  <button onClick={loadMore} className="echon-btn-secondary">
                     Load More
                   </button>
                 </div>
