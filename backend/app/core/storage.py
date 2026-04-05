@@ -32,9 +32,11 @@ except ImportError:
     print("⚠️  R2 module not found - using local storage")
 
 
-# Storage directory (fallback for local development)
-UPLOAD_DIR = Path("/tmp/echon_uploads")
-UPLOAD_DIR.mkdir(exist_ok=True)
+# Storage directory — configurable via env var
+# Production (Docker): UPLOAD_DIR=/app/uploads (mounted as a named volume)
+# Local dev: falls back to /tmp/echon_uploads
+UPLOAD_DIR = Path(os.getenv("UPLOAD_DIR", "/tmp/echon_uploads"))
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
 # Allowed file types
 ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/jpg", "image/png", "image/gif", "image/webp"}

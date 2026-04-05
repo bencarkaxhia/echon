@@ -619,6 +619,27 @@ export const invitationsApi = {
     return response.data;
   },
 
+  deleteInvitation: async (invitationId: string): Promise<{ message: string }> => {
+    const response = await api.delete(`/api/invitations/${invitationId}`);
+    return response.data;
+  },
+
+  getSentInvitations: async (spaceId: string): Promise<{
+    sent_invitations: Array<{
+      id: string;
+      invitee_name: string;
+      invitee_contact: string;
+      relationship?: string;
+      token: string;
+      created_at: string;
+      expires_at: string;
+    }>;
+    total: number;
+  }> => {
+    const response = await api.get(`/api/invitations/sent/${spaceId}`);
+    return response.data;
+  },
+
   getPendingApprovals: async (spaceId: string): Promise<{
     pending_approvals: Array<{
       membership_id: string;

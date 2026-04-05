@@ -63,11 +63,10 @@ export default function InviteMember({ onClose }: InviteMemberProps) {
 Your invitation code: ${invitationCode}
 
 Steps to join:
-1. Go to app.echon.com
-2. Create an account
-3. Click "Join with Code"
-4. Enter the code above
-5. Wait for approval
+1. Open https://echon.app/register?join=1
+2. Enter the invitation code above
+3. Fill in your name, email and password
+4. Wait for approval
 
 Looking forward to having you in our family space!`;
 

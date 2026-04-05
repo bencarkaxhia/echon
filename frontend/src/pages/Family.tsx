@@ -52,8 +52,11 @@ export default function Family() {
       const userMember = data.members.find((m: MemberProfile) => m.id === currentUser?.id);
       if (userMember?.role === 'founder') {
         try {
-          const pendingData = await invitationsApi.getPendingApprovals(spaceId);
-          setPendingCount(pendingData.total);
+          const [pendingData, sentData] = await Promise.all([
+            invitationsApi.getPendingApprovals(spaceId),
+            invitationsApi.getSentInvitations(spaceId),
+          ]);
+          setPendingCount(pendingData.total + sentData.total);
         } catch (err) {
           console.error('Failed to load pending approvals:', err);
         }

@@ -10,6 +10,9 @@ from pathlib import Path
 from .core.config import settings
 from .core.database import engine, Base
 
+# Import all models so they register with Base before create_all
+from .models import User, FamilySpace, SpaceMember, Post, Comment, Reaction, PostTag, Invitation, Relationship, Notification  # noqa: F401
+
 # Create all database tables
 Base.metadata.create_all(bind=engine)
 
@@ -81,6 +84,7 @@ app.include_router(relationships_router, prefix="/api/relationships", tags=["rel
 app.include_router(notifications_router, prefix="/api/notifications", tags=["notifications"])
 
 # Serve uploaded files
-UPLOAD_DIR = Path("/tmp/echon_uploads")
+import os as _os
+UPLOAD_DIR = Path(_os.getenv("UPLOAD_DIR", "/tmp/echon_uploads"))
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=str(UPLOAD_DIR)), name="uploads")

@@ -104,6 +104,41 @@ def create_invitation_code(
     }
 
 
+# --- DELETE INVITATION ---
+
+@router.delete("/{invitation_id}", status_code=status.HTTP_200_OK)
+def delete_invitation(
+    invitation_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Delete a sent invitation (only if not yet accepted).
+    Only founders/elders can delete invitations.
+    """
+    invitation = db.query(Invitation).filter(Invitation.id == invitation_id).first()
+    if not invitation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invitation not found")
+
+    membership = db.query(SpaceMember).filter(
+        SpaceMember.user_id == current_user.id,
+        SpaceMember.space_id == invitation.space_id,
+        SpaceMember.is_active == True
+    ).first()
+
+    if not membership or membership.role not in ["founder", "elder"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only founders and elders can delete invitations")
+
+    if invitation.accepted_by is not None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Cannot delete an invitation that has already been used")
+
+    db.delete(invitation)
+    db.commit()
+    return {"message": "Invitation deleted"}
+
+
 # --- JOIN WITH CODE ---
 
 @router.post("/join-with-code", status_code=status.HTTP_200_OK)
@@ -189,6 +224,51 @@ def join_with_code(
         "message": f"Your request to join {space.name} is pending approval from the space admin",
         "space_name": space.name,
         "space_id": str(space.id)
+    }
+
+
+# --- GET SENT INVITATIONS (tokens issued, not yet used) ---
+
+@router.get("/sent/{space_id}")
+def get_sent_invitations(
+    space_id: str,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    List invitations that were created but not yet accepted (code not yet used).
+    Only founders/elders can see this.
+    """
+    membership = db.query(SpaceMember).filter(
+        SpaceMember.user_id == current_user.id,
+        SpaceMember.space_id == space_id,
+        SpaceMember.is_active == True
+    ).first()
+
+    if not membership or membership.role not in ["founder", "elder"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Only founders and elders can view sent invitations")
+
+    invitations = db.query(Invitation).filter(
+        Invitation.space_id == space_id,
+        Invitation.accepted_by == None,  # noqa: E711
+        Invitation.expires_at > datetime.utcnow()
+    ).order_by(Invitation.created_at.desc()).all()
+
+    return {
+        "sent_invitations": [
+            {
+                "id": str(inv.id),
+                "invitee_name": inv.invitee_name,
+                "invitee_contact": inv.invitee_contact,
+                "relationship": inv.relationship_to_inviter,
+                "token": inv.token,
+                "created_at": inv.created_at.isoformat(),
+                "expires_at": inv.expires_at.isoformat(),
+            }
+            for inv in invitations
+        ],
+        "total": len(invitations)
     }
 
 
