@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 260" fill="none">
+  <defs>
+    <!-- Flame outer gradient -->
+    <radialGradient id="fg-outer" cx="50%" cy="65%" r="55%">
+      <stop offset="0%"   stop-color="#fff8e0" stop-opacity="0.95"/>
+      <stop offset="45%"  stop-color="#FFD700"/>
+      <stop offset="80%"  stop-color="#F4A460"/>
+      <stop offset="100%" stop-color="#D4A574" stop-opacity="0.5"/>
+    </radialGradient>
+    <!-- Flame inner glow -->
+    <radialGradient id="fg-inner" cx="50%" cy="55%" r="50%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="60%"  stop-color="#fff3a0" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#FFD700"  stop-opacity="0"/>
+    </radialGradient>
+    <!-- Wordmark gradient -->
+    <linearGradient id="wm-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%"   stop-color="#D4A574"/>
+      <stop offset="40%"  stop-color="#F5F5DC"/>
+      <stop offset="100%" stop-color="#D4A574"/>
+    </linearGradient>
+    <!-- Outer glow filter -->
+    <filter id="glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Flame mark — centred horizontally, positioned at top -->
+  <g transform="translate(100, 10) scale(3.5)" filter="url(#glow)">
+    <!-- Outer flame -->
+    <path
+      d="M 12 1
+         C 11 1, 5 9, 4 17
+         C 3 23, 5.5 30, 8 35
+         C 9.5 38, 10.5 42, 12 43
+         C 13.5 42, 14.5 38, 16 35
+         C 18.5 30, 21 23, 20 17
+         C 19 9, 13 1, 12 1 Z"
+      fill="url(#fg-outer)"
+      transform="translate(-12,-22)"
+    />
+    <!-- Wisp at tip -->
+    <path
+      d="M 12 1 C 12.5 1, 16 5, 15 10 C 14.2 7, 13 4, 12 1 Z"
+      fill="#fff8e0"
+      opacity="0.6"
+      transform="translate(-12,-22)"
+    />
+    <!-- Inner core -->
+    <path
+      d="M 12 14
+         C 10 18, 9 24, 10 30
+         C 10.5 33, 11.2 36, 12 38
+         C 12.8 36, 13.5 33, 14 30
+         C 15 24, 14 18, 12 14 Z"
+      fill="url(#fg-inner)"
+      transform="translate(-12,-22)"
+    />
+  </g>
+
+  <!-- ECHON wordmark -->
+  <text
+    x="100"
+    y="200"
+    text-anchor="middle"
+    font-family="Georgia, 'Times New Roman', serif"
+    font-size="52"
+    font-weight="600"
+    letter-spacing="10"
+    fill="url(#wm-grad)"
+  >ECHON</text>
+
+  <!-- World scripts line -->
+  <text
+    x="100"
+    y="232"
+    text-anchor="middle"
+    font-family="Arial Unicode MS, Noto Sans, sans-serif"
+    font-size="11"
+    letter-spacing="2"
+    fill="#D4A574"
+    opacity="0.40"
+  >ΕΧΩΝ · זִכָּרוֹן · 回憶 · ᛖᚲᛟᚾ · स्मृति · ذِكرَى</text>
+</svg>

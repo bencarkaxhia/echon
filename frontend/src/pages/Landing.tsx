@@ -15,6 +15,68 @@ import * as THREE from 'three';
 import { isAuthenticated } from '../lib/auth';
 import EchonLogo from '../components/EchonLogo';
 
+// ─── Sphere button ───────────────────────────────────────────────────────────
+
+interface SphereButtonProps {
+  icon: string;
+  label: string;
+  sub: string;
+  onClick: () => void;
+  delay?: number;
+  glow?: string;
+}
+
+function SphereButton({ icon, label, sub, onClick, delay = 0, glow = '#F4A460' }: SphereButtonProps) {
+  return (
+    <motion.button
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ scale: 1.08 }}
+      whileTap={{ scale: 0.95 }}
+      onClick={onClick}
+      className="flex flex-col items-center justify-center gap-1 focus:outline-none group"
+      style={{
+        width: 96,
+        height: 96,
+        borderRadius: '50%',
+        background: `radial-gradient(circle at 36% 32%,
+          rgba(255,248,224,0.14) 0%,
+          rgba(212,165,116,0.10) 30%,
+          rgba(30,15,5,0.82) 70%,
+          rgba(10,10,10,0.95) 100%)`,
+        border: `1px solid rgba(212,165,116,0.28)`,
+        boxShadow: `0 0 18px ${glow}22, inset 0 1px 0 rgba(255,255,255,0.07)`,
+        transition: 'box-shadow 0.3s ease',
+      }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.boxShadow =
+          `0 0 36px ${glow}55, inset 0 1px 0 rgba(255,255,255,0.10)`;
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.boxShadow =
+          `0 0 18px ${glow}22, inset 0 1px 0 rgba(255,255,255,0.07)`;
+      }}
+    >
+      <span className="text-lg leading-none" style={{ color: glow, opacity: 0.85 }}>
+        {icon}
+      </span>
+      <span
+        className="font-serif text-sm leading-none tracking-wide"
+        style={{ color: '#F5F5DC' }}
+      >
+        {label}
+      </span>
+      <span
+        className="text-[9px] tracking-[0.15em] uppercase leading-none"
+        style={{ color: 'rgba(212,165,116,0.55)' }}
+      >
+        {sub}
+      </span>
+    </motion.button>
+  );
+}
+
 // ─── Particle system ─────────────────────────────────────────────────────────
 
 /** Outer halo — ~300 warm wisps orbiting in a loose sphere shell */
@@ -309,36 +371,37 @@ export default function Landing() {
           </motion.p>
         </div>
 
-        {/* Bottom: three equal CTAs */}
+        {/* Bottom: three sphere orb buttons */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 1.0, delay: 2.4, ease: 'easeOut' }}
-          className="flex flex-col items-center gap-3 w-full max-w-xs"
+          className="flex items-end justify-center gap-5 md:gap-8 pb-2"
         >
-          {/* Primary CTA */}
-          <button
+          <SphereButton
+            icon="✦"
+            label="Create"
+            sub="new space"
             onClick={() => navigate('/register')}
-            className="echon-btn w-full text-sm md:text-base py-3.5"
-          >
-            Create your family space
-          </button>
-
-          {/* Enter (login) — same visual weight as create */}
-          <button
+            delay={2.5}
+            glow="#F4A460"
+          />
+          <SphereButton
+            icon="◈"
+            label="Enter"
+            sub="your family"
             onClick={() => navigate('/login')}
-            className="w-full py-3.5 rounded-lg border border-echon-wood text-echon-cream text-sm md:text-base tracking-wide hover:border-echon-gold hover:text-echon-gold transition-colors bg-echon-shadow/50 backdrop-blur-sm"
-          >
-            Enter your family space
-          </button>
-
-          {/* Join via invite */}
-          <button
+            delay={2.65}
+            glow="#D4A574"
+          />
+          <SphereButton
+            icon="🕯"
+            label="Join"
+            sub="I'm invited"
             onClick={() => navigate('/register?join=1')}
-            className="text-echon-gold/70 text-sm underline underline-offset-4 decoration-echon-wood/60 hover:text-echon-gold hover:decoration-echon-candle transition-colors py-1.5"
-          >
-            I was invited
-          </button>
+            delay={2.8}
+            glow="#FFD700"
+          />
         </motion.div>
 
       </div>

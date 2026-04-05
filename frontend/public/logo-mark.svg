@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 56" fill="none">
+  <defs>
+    <radialGradient id="m-outer" cx="50%" cy="65%" r="55%">
+      <stop offset="0%"   stop-color="#fff8e0" stop-opacity="0.95"/>
+      <stop offset="45%"  stop-color="#FFD700"/>
+      <stop offset="80%"  stop-color="#F4A460"/>
+      <stop offset="100%" stop-color="#D4A574" stop-opacity="0.5"/>
+    </radialGradient>
+    <radialGradient id="m-inner" cx="50%" cy="55%" r="50%">
+      <stop offset="0%"   stop-color="#ffffff" stop-opacity="0.95"/>
+      <stop offset="60%"  stop-color="#fff3a0" stop-opacity="0.7"/>
+      <stop offset="100%" stop-color="#FFD700"  stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <path
+    d="M 24 2
+       C 23 2, 10 16, 8 30
+       C 6 40, 11 50, 16 54
+       C 18 55, 20 56, 24 56
+       C 28 56, 30 55, 32 54
+       C 37 50, 42 40, 40 30
+       C 38 16, 25 2, 24 2 Z"
+    fill="url(#m-outer)"
+  />
+  <path
+    d="M 24 2 C 25 2, 32 10, 30 20 C 28.4 14, 26 8, 24 2 Z"
+    fill="#fff8e0" opacity="0.55"
+  />
+  <path
+    d="M 24 20
+       C 20 28, 18 38, 20 48
+       C 21 52, 22.5 55, 24 56
+       C 25.5 55, 27 52, 28 48
+       C 30 38, 28 28, 24 20 Z"
+    fill="url(#m-inner)"
+  />
+</svg>
