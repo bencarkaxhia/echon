@@ -5,7 +5,7 @@ Define family connections between users
 PATH: echon/backend/app/models/relationship.py
 """
 
-from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, CheckConstraint, Date, Text, ARRAY
+from sqlalchemy import Column, String, DateTime, Boolean, ForeignKey, CheckConstraint, Date, Text, ARRAY, Index
 from sqlalchemy.dialects.postgresql import UUID, JSONB
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -52,9 +52,12 @@ class Relationship(Base):
     person_b = relationship("User", foreign_keys=[person_b_id])
     creator = relationship("User", foreign_keys=[created_by])
     
-    # Constraint
     __table_args__ = (
         CheckConstraint('person_a_id != person_b_id', name='check_different_people'),
+        Index('idx_relationships_space', 'space_id'),
+        Index('idx_relationships_person_a', 'person_a_id'),
+        Index('idx_relationships_person_b', 'person_b_id'),
+        Index('idx_relationships_type', 'relationship_type'),
     )
     
     def __repr__(self):

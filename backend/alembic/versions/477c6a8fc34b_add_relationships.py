@@ -27,7 +27,7 @@ def upgrade():
         sa.Column('person_a_id', UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False),
         sa.Column('person_b_id', UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False),
         sa.Column('relationship_type', sa.String(50), nullable=False),
-        sa.Column('metadata', JSONB, nullable=True),
+        sa.Column('rel_metadata', JSONB, nullable=True),
         sa.Column('confidence_level', sa.String(20), server_default='confirmed'),
         sa.Column('created_by', UUID(as_uuid=True), sa.ForeignKey('users.id'), nullable=False),
         sa.Column('created_at', sa.DateTime, server_default=sa.text('now()'), nullable=False),

@@ -5,7 +5,7 @@ In-app notifications for family activities
 PATH: echon/backend/app/models/notification.py
 """
 
-from sqlalchemy import Column, String, DateTime, Boolean, Text, ForeignKey
+from sqlalchemy import Column, String, DateTime, Boolean, Text, ForeignKey, Index, text
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -23,10 +23,10 @@ class Notification(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     # Who receives this notification
-    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
-    
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+
     # What space is this about
-    space_id = Column(UUID(as_uuid=True), ForeignKey("family_spaces.id"), nullable=False)
+    space_id = Column(UUID(as_uuid=True), ForeignKey("family_spaces.id", ondelete="CASCADE"), nullable=False)
     
     # Notification content
     type = Column(String(50), nullable=False)  
@@ -40,7 +40,7 @@ class Notification(Base):
     link_url = Column(String(500), nullable=True)  # "/space/memories/123"
     
     # Optional: Who triggered this (for "John posted...")
-    actor_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=True)
+    actor_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
     actor_name = Column(String(255), nullable=True)  # Denormalized for performance
     actor_photo = Column(String(500), nullable=True)
     
@@ -55,6 +55,13 @@ class Notification(Base):
     user = relationship("User", foreign_keys=[user_id])
     space = relationship("FamilySpace")
     actor = relationship("User", foreign_keys=[actor_id])
-    
+
+    __table_args__ = (
+        Index('idx_notifications_user', 'user_id'),
+        Index('idx_notifications_space', 'space_id'),
+        Index('idx_notifications_unread', 'user_id', 'is_read'),
+        Index('idx_notifications_created', text('created_at DESC')),
+    )
+
     def __repr__(self):
         return f"<Notification {self.type} for {self.user_id}>"

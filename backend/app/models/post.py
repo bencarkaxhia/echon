@@ -3,7 +3,8 @@ Echon Post Model
 Memories: stories, photos, voice recordings, documents
 """
 
-from sqlalchemy import Column, String, DateTime, Text, ForeignKey, Date, Integer, JSON, Boolean
+from sqlalchemy import Column, String, DateTime, Text, ForeignKey, Date, Integer, JSON, Boolean, ARRAY
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -42,6 +43,10 @@ class Post(Base):
     decade = Column(String(10), nullable=True)  # "1950s", "1990s" for timeline sorting
     location_of_memory = Column(Text, nullable=True)  # "Gjakova, Kosovo"
     
+    # Memory event details (added in migration 477)
+    event_date = Column(Date, nullable=True)      # Specific date a memory occurred
+    people_tagged = Column(ARRAY(PG_UUID(as_uuid=True)), nullable=True)  # Users tagged in this memory
+
     # Privacy
     privacy_level = Column(String(50), default="everyone")  
     # Levels: "everyone" | "circle" | "private"

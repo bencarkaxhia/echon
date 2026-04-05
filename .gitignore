@@ -64,3 +64,12 @@ echon_json_test_relationships.txt
 # Uploads (local development)
 uploads/
 media/
+
+# Local VPS backups (copy here for offline archiving, not tracked in git)
+backup/*.sql
+backup/*.sql.gz
+backup/*.dump
+
+# Playwright test artifacts
+frontend/test-results/
+frontend/playwright-report/

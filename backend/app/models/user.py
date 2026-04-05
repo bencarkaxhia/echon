@@ -3,7 +3,7 @@ Echon User Model
 Members who can log in to family spaces
 """
 
-from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, ForeignKey
+from sqlalchemy import Column, String, DateTime, Boolean, Integer, Text, ForeignKey, Date
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from datetime import datetime
@@ -29,7 +29,11 @@ class User(Base):
     # Profile
     name = Column(String(255), nullable=False)
     birth_year = Column(Integer, nullable=True)
+    birth_date = Column(Date, nullable=True)
+    death_date = Column(Date, nullable=True)
     birth_location = Column(Text, nullable=True)
+    current_location = Column(String(200), nullable=True)
+    bio = Column(Text, nullable=True)
     profile_photo_url = Column(Text, nullable=True)
     
     # Settings

@@ -8,13 +8,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pathlib import Path
 from .core.config import settings
-from .core.database import engine, Base
+from .core.database import Base  # noqa: F401 — needed so models can import Base
 
-# Import all models so they register with Base before create_all
+# Import all models so they register with Base.metadata (needed by Alembic autogenerate)
 from .models import User, FamilySpace, SpaceMember, Post, Comment, Reaction, PostTag, Invitation, Relationship, Notification  # noqa: F401
 
-# Create all database tables
-Base.metadata.create_all(bind=engine)
+# NOTE: Database schema is managed by Alembic migrations.
+# For a fresh install, run:  alembic upgrade head
+# For existing installs:     alembic upgrade head  (applies any new migrations)
 
 # Initialize FastAPI app
 app = FastAPI(
