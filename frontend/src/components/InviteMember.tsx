@@ -18,6 +18,8 @@ export default function InviteMember({ onClose }: InviteMemberProps) {
   const [step, setStep] = useState<'form' | 'code'>('form');
   const [generating, setGenerating] = useState(false);
   const [invitationCode, setInvitationCode] = useState('');
+  const [linkCopied, setLinkCopied] = useState(false);
+  const [msgCopied, setMsgCopied] = useState(false);
   const [inviteeInfo, setInviteeInfo] = useState({
     name: '',
     contact: '',
@@ -52,26 +54,27 @@ export default function InviteMember({ onClose }: InviteMemberProps) {
     }
   };
 
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(invitationCode);
-    alert('Invitation code copied to clipboard!');
+  const joinLink = `${window.location.origin}/join/${invitationCode}`;
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(joinLink);
+    setLinkCopied(true);
+    setTimeout(() => setLinkCopied(false), 2500);
   };
 
   const handleCopyMessage = () => {
-    const message = `You're invited to join our family space on Echon!
+    const message = `${inviteeInfo.name}, you're invited to join our family space on Echon!
 
-Your invitation code: ${invitationCode}
+Tap the link below — it opens the registration form directly:
+${joinLink}
 
-Steps to join:
-1. Open https://echon.app/register?join=1
-2. Enter the invitation code above
-3. Fill in your name, email and password
-4. Wait for approval
+Just fill in your name, email, and password. That's it.
 
-Looking forward to having you in our family space!`;
+Looking forward to having you with us!`;
 
     navigator.clipboard.writeText(message);
-    alert('Invitation message copied! You can now paste it in WhatsApp, email, or SMS.');
+    setMsgCopied(true);
+    setTimeout(() => setMsgCopied(false), 2500);
   };
 
   return (
@@ -173,63 +176,53 @@ Looking forward to having you in our family space!`;
             </form>
           </>
         ) : (
-          /* STEP 2: Show Generated Code */
+          /* STEP 2: Show Magic Link */
           <>
             <div className="text-center mb-6">
-              <div className="text-6xl mb-4">✅</div>
-              <h2 className="text-2xl font-serif text-echon-cream mb-2">
-                Invitation Code Generated!
+              <div className="text-6xl mb-3">🔗</div>
+              <h2 className="text-2xl font-serif text-echon-cream mb-1">
+                Invitation Ready
               </h2>
-              <p className="text-echon-cream-dark">
-                Share this code with {inviteeInfo.name}
+              <p className="text-echon-cream-dark text-sm">
+                Share the link below with {inviteeInfo.name} — one tap and they're in.
               </p>
             </div>
 
-            {/* Code Display */}
-            <div className="bg-echon-shadow border-2 border-echon-gold rounded-lg p-6 mb-6 text-center">
-              <p className="text-echon-cream-dark text-sm mb-2">Invitation Code:</p>
-              <p className="text-echon-gold text-2xl font-mono font-bold mb-4 select-all">
-                {invitationCode}
+            {/* Magic link — primary CTA */}
+            <div className="bg-echon-shadow border-2 border-echon-gold rounded-xl p-4 mb-4">
+              <p className="text-echon-cream-dark text-xs mb-2 uppercase tracking-widest">Invitation Link</p>
+              <p className="text-echon-gold text-sm font-mono break-all mb-3 select-all leading-relaxed">
+                {joinLink}
               </p>
               <button
-                onClick={handleCopyCode}
-                className="echon-btn-secondary w-full"
+                onClick={handleCopyLink}
+                className="echon-btn w-full text-sm"
               >
-                📋 Copy Code
+                {linkCopied ? '✓ Link Copied!' : '📋 Copy Link'}
               </button>
             </div>
 
-            {/* Instructions */}
-            <div className="bg-echon-shadow/50 border border-echon-wood rounded-lg p-4 mb-6">
-              <p className="text-echon-cream font-semibold mb-2">How to share:</p>
-              <ol className="text-echon-cream-dark text-sm space-y-2 list-decimal list-inside">
-                <li>Copy the code above</li>
-                <li>Send it via WhatsApp, email, or SMS</li>
-                <li>Tell them to register on Echon</li>
-                <li>They click "Join with Code" and enter it</li>
-                <li>You'll get a notification to approve them</li>
-              </ol>
-            </div>
+            <p className="text-echon-cream-dark text-xs text-center mb-4">
+              They tap the link → form opens → fills name & password → done. No code typing needed.
+            </p>
 
-            {/* Quick Share */}
-            <div className="space-y-3">
-              <button
-                onClick={handleCopyMessage}
-                className="echon-btn w-full"
-              >
-                💬 Copy Full Invitation Message
-              </button>
+            {/* Full message for WhatsApp/Telegram/Email */}
+            <button
+              onClick={handleCopyMessage}
+              className="echon-btn-secondary w-full mb-3 text-sm"
+            >
+              {msgCopied ? '✓ Message Copied!' : '💬 Copy Ready-to-Send Message'}
+            </button>
 
-              <button
-                onClick={onClose}
-                className="echon-btn-secondary w-full"
-              >
-                Done
-              </button>
-            </div>
+            <button
+              onClick={onClose}
+              className="w-full py-2 text-echon-cream-dark text-sm hover:text-echon-cream transition-colors"
+            >
+              Done
+            </button>
 
-            <p className="text-echon-cream-dark text-xs text-center mt-4">
-              This code expires in 30 days
+            <p className="text-echon-cream-dark/50 text-xs text-center mt-4">
+              Expires in 30 days · {invitationCode}
             </p>
           </>
         )}

@@ -38,6 +38,31 @@ def generate_invitation_code() -> str:
     return f"inv_{year}_{random_part}"
 
 
+# --- PREVIEW INVITATION (public — no auth required) ---
+
+@router.get("/preview/{token}")
+def preview_invitation(token: str, db: Session = Depends(get_db)):
+    """
+    Return basic invite info for the magic-link join page.
+    Public endpoint — no authentication required.
+    Only returns non-sensitive info (space name, invitee name, validity).
+    """
+    invitation = db.query(Invitation).filter(Invitation.token == token).first()
+    if not invitation:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Invitation not found")
+
+    space = db.query(FamilySpace).filter(FamilySpace.id == invitation.space_id).first()
+
+    return {
+        "valid": invitation.is_valid(),
+        "invitee_name": invitation.invitee_name,
+        "space_name": space.name if space else "Family Space",
+        "personal_message": invitation.personal_message,
+        "expires_at": invitation.expires_at.isoformat(),
+        "already_used": invitation.accepted_by is not None,
+    }
+
+
 # --- CREATE INVITATION CODE ---
 
 @router.post("/create-code", status_code=status.HTTP_201_CREATED)

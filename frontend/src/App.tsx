@@ -9,6 +9,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Register from './pages/Register';
 import Login from './pages/Login';
+import JoinSpace from './pages/JoinSpace';
 import SpaceSelector from './pages/SpaceSelector';
 import CreateSpace from './pages/CreateSpace';
 import Space from './pages/Space';
@@ -29,6 +30,8 @@ function App() {
         <Route path="/" element={<Landing />} />
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
+        {/* Magic-link invite: echon.app/join/:token */}
+        <Route path="/join/:token" element={<JoinSpace />} />
 
         {/* Protected routes (require authentication) */}
         <Route

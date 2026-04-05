@@ -34,24 +34,24 @@ The Çarkaxhia Space. One real family using it in the wild.
 Make the app reliable and contributor-friendly before expanding features.
 
 **Goals:**
-- [ ] Alembic migrations (replace schema `create_all` — required for safe upgrades)
-- [ ] Backend test coverage ≥ 80%
+- [x] Alembic migrations — models fully synced, `create_all` removed ✅
+- [x] Playwright E2E tests — 11 tests, all passing ✅
+- [x] Magic-link invitations — `echon.app/join/:token` deep link, no code typing ✅
+- [ ] Backend unit/integration test coverage ≥ 80%
 - [ ] Replace all `alert()` calls with inline UI feedback
 - [ ] Loading states / skeletons across all feeds
 - [ ] Media handling improvements:
   - [ ] Image compression before upload (max 2 MB stored)
   - [ ] Thumbnail generation for memory feed
-  - [ ] Video upload support (short clips, max 50 MB)
+  - [ ] **Video story upload** (record via camera, same flow as voice stories, max 50 MB)
 - [ ] Error pages (404, 500, connection lost)
-- [ ] `.env.example` with all required and optional vars documented
 - [ ] One-command local setup script (`./dev-setup.sh`)
-- [ ] Invitation email template (currently plain text)
 
 ---
 
-## v0.3 — Memory Timeline (Q3 2026)
+## v0.3 — Timeline + Platform (Q3 2026)
 
-Help families navigate their history, not just the latest feed.
+History browsing and first native distribution channel.
 
 **Goals:**
 - [ ] Timeline view — memories browsable by decade (1960s, 1970s, ...)
@@ -60,6 +60,15 @@ Help families navigate their history, not just the latest feed.
 - [ ] Comments on memories
 - [ ] Search across memories and stories
 - [ ] Pin important memories to the space home
+- [ ] **Google Play Store** via TWA (Trusted Web Activity)
+  - Wraps the existing PWA using [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap)
+  - Requires: `/.well-known/assetlinks.json` on the server + signing keystore
+  - No separate codebase — same web app, distributed through Play Store
+  - Automatic updates (no store approval for UI changes)
+- [ ] **Family Call** (live voice/video) via embedded Jitsi room
+  - One "Call" button per space → opens a Jitsi room named after the space
+  - Self-hostable (Jitsi is open-source) or use meet.jit.si for free
+  - No WebRTC infrastructure to build — pure embed
 
 ---
 

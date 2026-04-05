@@ -619,6 +619,18 @@ export const invitationsApi = {
     return response.data;
   },
 
+  previewInvitation: async (token: string): Promise<{
+    valid: boolean;
+    invitee_name: string;
+    space_name: string;
+    personal_message: string | null;
+    expires_at: string;
+    already_used: boolean;
+  }> => {
+    const response = await api.get(`/api/invitations/preview/${token}`);
+    return response.data;
+  },
+
   deleteInvitation: async (invitationId: string): Promise<{ message: string }> => {
     const response = await api.delete(`/api/invitations/${invitationId}`);
     return response.data;
