@@ -10,6 +10,8 @@ import Landing from './pages/Landing';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import JoinSpace from './pages/JoinSpace';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import SpaceSelector from './pages/SpaceSelector';
 import CreateSpace from './pages/CreateSpace';
 import Space from './pages/Space';
@@ -32,6 +34,8 @@ function App() {
         <Route path="/login" element={<Login />} />
         {/* Magic-link invite: echon.app/join/:token */}
         <Route path="/join/:token" element={<JoinSpace />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {/* Protected routes (require authentication) */}
         <Route

@@ -309,6 +309,19 @@ export const authApi = {
     });
     return response.data;
   },
+
+  forgotPassword: async (email: string): Promise<{
+    message: string;
+    reset_url?: string;
+  }> => {
+    const response = await api.post('/api/auth/forgot-password', { email });
+    return response.data;
+  },
+
+  resetPassword: async (token: string, new_password: string): Promise<{ message: string }> => {
+    const response = await api.post('/api/auth/reset-password', { token, new_password });
+    return response.data;
+  },
 };
 
 // --- FAMILY SPACE ENDPOINTS ---

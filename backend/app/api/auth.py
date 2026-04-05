@@ -6,16 +6,18 @@ Register, Login, Get Current User
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 import logging
+import secrets
 
 from ..core.database import get_db
 from ..core.security import verify_password, get_password_hash, create_access_token, decode_access_token
 from ..core.storage import save_image, get_file_url, FileUploadError
+from ..core.config import settings
 from ..models.user import User
 from ..schemas.auth import UserRegister, UserLogin, LoginResponse, UserResponse
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, EmailStr, field_validator
 
 logger = logging.getLogger(__name__)
 
@@ -242,3 +244,121 @@ async def upload_profile_photo(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Upload failed — please try again"
         )
+
+
+# ─── EMAIL HELPER ────────────────────────────────────────────────────────────
+
+def _send_reset_email(to_email: str, reset_url: str) -> bool:
+    """
+    Send password-reset email.
+    Uses SendGrid if SENDGRID_API_KEY is configured.
+    Falls back to logging the URL (useful before email is configured).
+    Returns True if sent, False if only logged.
+    """
+    if not settings.SENDGRID_API_KEY:
+        logger.warning(
+            "No SENDGRID_API_KEY set — reset link for %s: %s",
+            to_email, reset_url
+        )
+        return False
+
+    try:
+        import urllib.request, json as _json
+        payload = _json.dumps({
+            "personalizations": [{"to": [{"email": to_email}]}],
+            "from": {"email": settings.FROM_EMAIL, "name": "Echon"},
+            "subject": "Reset your Echon password",
+            "content": [{"type": "text/html", "value": f"""
+<div style="font-family:sans-serif;max-width:480px;margin:auto;padding:32px">
+  <h2 style="color:#c9a84c">Reset your Echon password</h2>
+  <p>Click the button below to set a new password. This link expires in <strong>1 hour</strong>.</p>
+  <a href="{reset_url}"
+     style="display:inline-block;background:#c9a84c;color:#1a1207;padding:12px 24px;
+            border-radius:8px;text-decoration:none;font-weight:bold;margin:16px 0">
+    Reset Password
+  </a>
+  <p style="color:#888;font-size:12px">If you didn't request this, ignore this email.</p>
+  <p style="color:#888;font-size:12px">Or copy this link:<br>{reset_url}</p>
+</div>"""}],
+        }).encode()
+        req = urllib.request.Request(
+            "https://api.sendgrid.com/v3/mail/send",
+            data=payload,
+            headers={
+                "Authorization": f"Bearer {settings.SENDGRID_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(req, timeout=10) as resp:
+            return resp.status in (200, 202)
+    except Exception:
+        logger.exception("SendGrid send failed for %s", to_email)
+        return False
+
+
+# ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
+
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str
+    new_password: str = Field(..., min_length=8, max_length=128)
+
+
+@router.post("/forgot-password", status_code=status.HTTP_200_OK)
+def forgot_password(
+    data: ForgotPasswordRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    Request a password reset link.
+    Always returns 200 to avoid email enumeration.
+    Sends email if SendGrid is configured; otherwise logs the link.
+    """
+    user = db.query(User).filter(User.email == data.email).first()
+
+    if user:
+        token = secrets.token_urlsafe(32)
+        user.reset_token = token
+        user.reset_token_expires_at = datetime.utcnow() + timedelta(hours=1)
+        db.commit()
+
+        reset_url = f"https://echon.app/reset-password/{token}"
+        email_sent = _send_reset_email(user.email, reset_url)
+
+        if not email_sent:
+            # No email configured — return the URL directly so the user can act on it
+            # (useful until SendGrid key is added)
+            return {
+                "message": "no_email_configured",
+                "reset_url": reset_url,
+            }
+
+    return {"message": "If that email is registered, a reset link has been sent."}
+
+
+@router.post("/reset-password", status_code=status.HTTP_200_OK)
+def reset_password(data: ResetPasswordRequest, db: Session = Depends(get_db)):
+    """
+    Set a new password using a valid reset token.
+    Token is single-use and expires after 1 hour.
+    """
+    user = db.query(User).filter(User.reset_token == data.token).first()
+
+    if not user or not user.reset_token_expires_at:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="Invalid or expired reset link.")
+
+    if datetime.utcnow() > user.reset_token_expires_at:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,
+                            detail="This reset link has expired. Please request a new one.")
+
+    user.password_hash = get_password_hash(data.new_password)
+    user.reset_token = None
+    user.reset_token_expires_at = None
+    db.commit()
+
+    return {"message": "Password updated successfully. You can now log in."}

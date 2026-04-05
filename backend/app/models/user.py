@@ -40,6 +40,10 @@ class User(Base):
     simplified_mode = Column(Boolean, default=False)  # Elder-friendly UI
     language = Column(String(10), default="en")  # en, sq (Albanian), de, etc.
     
+    # Password reset
+    reset_token = Column(String(64), nullable=True, index=True)
+    reset_token_expires_at = Column(DateTime, nullable=True)
+
     # Metadata
     created_at = Column(DateTime, default=datetime.utcnow)
     last_active = Column(DateTime, default=datetime.utcnow)

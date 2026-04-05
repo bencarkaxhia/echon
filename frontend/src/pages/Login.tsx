@@ -88,9 +88,12 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-echon-cream text-sm mb-2">
-                Password
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-echon-cream text-sm">Password</label>
+                <Link to="/forgot-password" className="text-echon-gold text-xs underline">
+                  Forgot password?
+                </Link>
+              </div>
               <PasswordInput
                 required
                 value={formData.password}
