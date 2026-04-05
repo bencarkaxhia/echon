@@ -71,7 +71,8 @@ def create_relationship(
         relationship_type=rel_data.relationship_type,
         rel_metadata=rel_data.rel_metadata,
         confidence_level=rel_data.confidence_level,
-        created_by=current_user.id
+        created_by=current_user.id,
+        is_active=True,
     )
     
     db.add(new_rel)
