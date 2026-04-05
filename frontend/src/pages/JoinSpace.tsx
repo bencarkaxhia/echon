@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { invitationsApi } from '../lib/api';
 import { setAuthToken, setCurrentUser } from '../lib/auth';
 import { groupedRelationshipTypes, relationshipLabel } from '../lib/relationshipTypes';
+import PasswordInput from '../components/PasswordInput';
 
 type Preview = {
   valid: boolean;
@@ -287,11 +288,9 @@ export default function JoinSpace() {
 
             <div>
               <label className="block text-echon-cream text-sm mb-1">Password *</label>
-              <input
-                type="password"
+              <PasswordInput
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="echon-input"
                 placeholder="At least 8 characters"
                 required
                 autoComplete="new-password"
@@ -300,11 +299,9 @@ export default function JoinSpace() {
 
             <div>
               <label className="block text-echon-cream text-sm mb-1">Confirm Password *</label>
-              <input
-                type="password"
+              <PasswordInput
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="echon-input"
                 placeholder="Re-enter password"
                 required
                 autoComplete="new-password"

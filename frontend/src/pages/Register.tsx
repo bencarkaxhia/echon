@@ -10,6 +10,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { authApi, invitationsApi } from '../lib/api';
 import { setAuthToken, setCurrentUser, setCurrentSpace } from '../lib/auth';
+import PasswordInput from '../components/PasswordInput';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -181,24 +182,20 @@ export default function Register() {
 
             <div>
               <label className="block text-echon-cream text-sm mb-2">Password *</label>
-              <input
-                type="password"
+              <PasswordInput
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="echon-input"
                 placeholder="At least 8 characters"
               />
             </div>
 
             <div>
               <label className="block text-echon-cream text-sm mb-2">Confirm Password *</label>
-              <input
-                type="password"
+              <PasswordInput
                 required
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="echon-input"
                 placeholder="Re-enter password"
               />
             </div>

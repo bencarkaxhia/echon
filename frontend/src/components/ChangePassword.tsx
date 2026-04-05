@@ -8,6 +8,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { authApi } from '../lib/api';
+import PasswordInput from './PasswordInput';
 
 interface ChangePasswordProps {
   onClose: () => void;
@@ -80,11 +81,9 @@ export default function ChangePassword({ onClose }: ChangePasswordProps) {
             <label className="block text-echon-cream text-sm mb-2">
               Current Password
             </label>
-            <input
-              type="password"
+            <PasswordInput
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="echon-input"
               required
               disabled={loading}
             />
@@ -94,11 +93,9 @@ export default function ChangePassword({ onClose }: ChangePasswordProps) {
             <label className="block text-echon-cream text-sm mb-2">
               New Password
             </label>
-            <input
-              type="password"
+            <PasswordInput
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              className="echon-input"
               placeholder="At least 6 characters"
               required
               disabled={loading}
@@ -109,11 +106,9 @@ export default function ChangePassword({ onClose }: ChangePasswordProps) {
             <label className="block text-echon-cream text-sm mb-2">
               Confirm New Password
             </label>
-            <input
-              type="password"
+            <PasswordInput
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="echon-input"
               required
               disabled={loading}
             />

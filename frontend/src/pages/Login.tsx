@@ -10,6 +10,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { authApi } from '../lib/api';
 import { setAuthToken, setCurrentUser } from '../lib/auth';
+import PasswordInput from '../components/PasswordInput';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -90,12 +91,10 @@ export default function Login() {
               <label className="block text-echon-cream text-sm mb-2">
                 Password
               </label>
-              <input
-                type="password"
+              <PasswordInput
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="echon-input"
                 placeholder="Your password"
               />
             </div>
