@@ -16,22 +16,20 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # Security
-    SECRET_KEY: str = "54034a0e067c13d4d797fce2d3fd8b20136de68b8dc3f97c55f944a797dc62c7"                                        # created via "openssl rand -hex 32"
+    SECRET_KEY: str = "change-me-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
-    
-    # Database
-    # DATABASE_URL: str = "postgresql://echon:echon_dev_password@localhost:5432/echon_db"                                         # local postgres deployment
-    DATABASE_URL: str = "postgresql://postgres:BRMLFuKuKXiTuBerHEJqJpRRZYZFxNUR@switchyard.proxy.rlwy.net:11156/railway"      # Railway Postgres Deployment
-    
-    # Redis
-    # REDIS_URL: str = "redis://localhost:6379/0"     # local redis deployment
-    REDIS_URL: str = "redis://default:qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE@yamanote.proxy.rlwy.net:47182"                         # Railway Redis Deployment
-    # REDIS_PASSWORD: Optional[str] = "qUZYAQcoEuIAzflKSIHiSaUSKzoEOEBE"                                                        # Railway Redis Password
+
+    # Database — set via .env (local or Railway)
+    DATABASE_URL: str = "postgresql://echon:echon_dev_password@localhost:55432/echon_db"
+
+    # Redis — set via .env (local or Railway)
+    REDIS_URL: str = "redis://localhost:65379/0"
     
     # CORS (Frontend URLs)
     CORS_ORIGINS: list = [
         "http://localhost:5173",            # Vite local dev server
+        "http://localhost:5174",            # Vite alt port
         "http://localhost:3000",
         "https://echon.vercel.app",         # Vercel Production Testing
         "https://echon.app",                # Production

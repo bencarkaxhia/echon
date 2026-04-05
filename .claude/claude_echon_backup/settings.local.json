@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__plugin_everything-claude-code_github__get_file_contents",
+      "mcp__plugin_everything-claude-code_github__list_commits",
+      "mcp__plugin_everything-claude-code_github__list_issues",
+      "mcp__plugin_everything-claude-code_github__list_pull_requests",
+      "Bash(cp /home/beni/Echon/CLAUDE.md /tmp/CLAUDE_echon_backup.md)",
+      "Bash(cp -r /home/beni/Echon/.claude /tmp/claude_echon_backup)"
+    ]
+  }
+}

@@ -16,7 +16,7 @@ export default function Landing() {
   // If already logged in, go to space selection
   useEffect(() => {
     if (isAuthenticated()) {
-      navigate('/create-space');
+      navigate('/select-space');
     }
   }, [navigate]);
 
