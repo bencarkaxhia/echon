@@ -159,14 +159,16 @@ def get_space(
         )
     
     space = db.query(FamilySpace).filter(FamilySpace.id == space_id).first()
-    
+
     if not space:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Family space not found"
         )
-    
-    return SpaceResponse.model_validate(space)
+
+    response = SpaceResponse.model_validate(space)
+    response.current_user_role = membership.role
+    return response
 
 
 # --- UPDATE SPACE SETTINGS ---

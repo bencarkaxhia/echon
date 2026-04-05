@@ -84,6 +84,7 @@ export interface FamilySpace {
   color_primary: string;
   color_secondary: string;
   created_at: string;
+  current_user_role?: string;
 }
 
 export interface Post {

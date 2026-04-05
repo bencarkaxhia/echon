@@ -24,12 +24,14 @@ export default function Space() {
   const [spaceData, setSpaceData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
-  // Profile completion — show if key fields are missing and user hasn't dismissed
+  const [showProfileModal, setShowProfileModal] = useState(false);
+  const [profileDismissed, setProfileDismissed] = useState(
+    () => !!localStorage.getItem('echon_profile_done')
+  );
+
   const user = getCurrentUser();
-  const profileDismissed = !!localStorage.getItem('echon_profile_done');
   const profileIncomplete = !!user && !profileDismissed &&
     !user.profile_photo_url && !user.birth_year && !user.birth_location;
-  const [showProfileModal, setShowProfileModal] = useState(false);
 
   useEffect(() => {
     loadSpaceData();
@@ -73,6 +75,7 @@ export default function Space() {
 
   const handleProfileDone = () => {
     localStorage.setItem('echon_profile_done', 'true');
+    setProfileDismissed(true);
     setShowProfileModal(false);
   };
 

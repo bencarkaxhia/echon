@@ -128,6 +128,8 @@ async def space_presence_ws(
             data = await websocket.receive_text()
             if data == "ping":
                 await websocket.send_text("pong")
-    except WebSocketDisconnect:
+    except (WebSocketDisconnect, Exception):
+        pass
+    finally:
         presence_manager.disconnect(websocket, space_id)
         await presence_manager.broadcast_presence(space_id)

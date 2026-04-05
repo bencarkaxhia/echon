@@ -28,6 +28,7 @@ export default function SpaceSettingsPanel({ space, onClose, onSpaceUpdated }: S
   const [tab, setTab] = useState<Tab>('identity');
   const [members, setMembers] = useState<MemberProfile[]>([]);
   const [loadingMembers, setLoadingMembers] = useState(false);
+  const [memberError, setMemberError] = useState<string | null>(null);
 
   // Identity fields
   const [name, setName] = useState(space.name);
@@ -42,11 +43,15 @@ export default function SpaceSettingsPanel({ space, onClose, onSpaceUpdated }: S
 
   const loadMembers = async () => {
     setLoadingMembers(true);
+    setMemberError(null);
     try {
       const data = await familyApi.getSpaceMembers(spaceId);
       setMembers(data.members);
-    } catch { /* ignore */ }
-    finally { setLoadingMembers(false); }
+    } catch {
+      setMemberError('Could not load members — please try again.');
+    } finally {
+      setLoadingMembers(false);
+    }
   };
 
   const handleSaveIdentity = async (e: React.FormEvent) => {
@@ -208,6 +213,13 @@ export default function SpaceSettingsPanel({ space, onClose, onSpaceUpdated }: S
               >
                 {loadingMembers ? (
                   <p className="text-echon-cream-dark text-sm text-center py-8">Loading…</p>
+                ) : memberError ? (
+                  <div className="text-center py-8">
+                    <p className="text-red-400 text-sm mb-3">{memberError}</p>
+                    <button onClick={loadMembers} className="echon-btn-secondary text-xs px-4 py-1.5">
+                      Retry
+                    </button>
+                  </div>
                 ) : members.length === 0 ? (
                   <p className="text-echon-cream-dark text-sm text-center py-8">No members found</p>
                 ) : (

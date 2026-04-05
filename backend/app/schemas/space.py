@@ -36,7 +36,8 @@ class SpaceResponse(BaseModel):
     color_secondary: str
     created_at: datetime
     is_active: bool
-    
+    current_user_role: Optional[str] = None  # populated by get_space, not stored on model
+
     class Config:
         from_attributes = True
         json_encoders = {

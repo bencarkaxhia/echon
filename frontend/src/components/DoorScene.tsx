@@ -137,7 +137,7 @@ export default function DoorScene({ familyName, emblemUrl, spaceData, onSpaceUpd
         <div className="bg-echon-shadow border border-echon-wood rounded-lg px-2 py-2">
           <NotificationBell />
         </div>
-        {spaceData && (
+        {spaceData?.current_user_role === 'founder' && (
           <button
             onClick={() => setShowSettings(true)}
             title="Space settings"
