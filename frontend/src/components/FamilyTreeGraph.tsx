@@ -124,48 +124,74 @@ export default function FamilyTreeGraph({
     positionNode(currentUserId, 0, 400);
 
     // Find and position parents (level -1)
+    // Pattern 1: {a: X, b: currentUser, type: father/mother/parent} → X is parent
+    // Pattern 2: {a: currentUser, b: X, type: son/daughter/child} → X is parent
+    const addedParentEdges = new Set<string>();
     let parentX = 200;
     tree.edges.forEach(edge => {
-      if (String(edge.person_b_id) === String(currentUserId)) {
-        const relType = edge.relationship_type;
-        if (['father', 'mother', 'parent'].includes(relType)) {
-          positionNode(String(edge.person_a_id), -1, parentX);
-          edges.push({
-            id: String(edge.id),
-            source: String(edge.person_a_id),
-            target: String(currentUserId),
-            type: ConnectionLineType.SmoothStep,
-            animated: false,
-            style: { stroke: '#10B981', strokeWidth: 3 },
-            label: relType,
-            labelStyle: { fill: '#FEF3C7', fontSize: 11, fontWeight: 600 },
-            labelBgStyle: { fill: '#1C1917', fillOpacity: 0.8 },
-          });
-          parentX += 300;
-        }
+      const aStr = String(edge.person_a_id);
+      const bStr = String(edge.person_b_id);
+      const cu = String(currentUserId);
+      const relType = edge.relationship_type;
+      let parentId: string | null = null;
+
+      if (bStr === cu && ['father', 'mother', 'parent'].includes(relType)) {
+        parentId = aStr; // X is father/parent of me
+      } else if (aStr === cu && ['son', 'daughter', 'child'].includes(relType)) {
+        parentId = bStr; // I am son/daughter of X
+      }
+
+      if (parentId && !addedParentEdges.has(parentId)) {
+        addedParentEdges.add(parentId);
+        positionNode(parentId, -1, parentX);
+        edges.push({
+          id: String(edge.id),
+          source: parentId,
+          target: cu,
+          type: ConnectionLineType.SmoothStep,
+          animated: false,
+          style: { stroke: '#10B981', strokeWidth: 3 },
+          label: relType,
+          labelStyle: { fill: '#FEF3C7', fontSize: 11, fontWeight: 600 },
+          labelBgStyle: { fill: '#1C1917', fillOpacity: 0.8 },
+        });
+        parentX += 300;
       }
     });
 
     // Find and position children (level +1)
+    // Pattern 1: {a: X, b: currentUser, type: son/daughter/child} → X is child
+    // Pattern 2: {a: currentUser, b: X, type: father/mother/parent} → X is child
+    const addedChildEdges = new Set<string>();
     let childX = 200;
     tree.edges.forEach(edge => {
-      if (String(edge.person_a_id) === String(currentUserId)) {
-        const relType = edge.relationship_type;
-        if (['son', 'daughter', 'child'].includes(relType)) {
-          positionNode(String(edge.person_b_id), 1, childX);
-          edges.push({
-            id: String(edge.id),
-            source: String(currentUserId),
-            target: String(edge.person_b_id),
-            type: ConnectionLineType.SmoothStep,
-            animated: false,
-            style: { stroke: '#3B82F6', strokeWidth: 3 },
-            label: relType,
-            labelStyle: { fill: '#FEF3C7', fontSize: 11, fontWeight: 600 },
-            labelBgStyle: { fill: '#1C1917', fillOpacity: 0.8 },
-          });
-          childX += 300;
-        }
+      const aStr = String(edge.person_a_id);
+      const bStr = String(edge.person_b_id);
+      const cu = String(currentUserId);
+      const relType = edge.relationship_type;
+      let childId: string | null = null;
+
+      if (bStr === cu && ['son', 'daughter', 'child'].includes(relType)) {
+        childId = aStr; // X is son/daughter/child of me
+      } else if (aStr === cu && ['father', 'mother', 'parent'].includes(relType)) {
+        childId = bStr; // I am father/mother of X
+      }
+
+      if (childId && !addedChildEdges.has(childId)) {
+        addedChildEdges.add(childId);
+        positionNode(childId, 1, childX);
+        edges.push({
+          id: String(edge.id),
+          source: cu,
+          target: childId,
+          type: ConnectionLineType.SmoothStep,
+          animated: false,
+          style: { stroke: '#3B82F6', strokeWidth: 3 },
+          label: relType,
+          labelStyle: { fill: '#FEF3C7', fontSize: 11, fontWeight: 600 },
+          labelBgStyle: { fill: '#1C1917', fillOpacity: 0.8 },
+        });
+        childX += 300;
       }
     });
 
