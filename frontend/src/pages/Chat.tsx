@@ -45,6 +45,8 @@ export default function Chat() {
   const currentUser = getCurrentUser();
 
   const spaceId = getCurrentSpace();
+  const reconnectAttemptsRef = useRef(0);
+  const shouldReconnectRef = useRef(true);
 
   // ── Scroll to latest ──────────────────────────────────────────────────────
   const scrollToBottom = useCallback(() => {
@@ -72,9 +74,9 @@ export default function Chat() {
     loadHistory();
   }, [loadHistory]);
 
-  // ── WebSocket ─────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!spaceId) return;
+  // ── WebSocket with auto-reconnect ─────────────────────────────────────────
+  const connectWs = useCallback(() => {
+    if (!spaceId || !shouldReconnectRef.current) return;
 
     const token = getAuthToken();
     if (!token) { navigate('/login'); return; }
@@ -86,6 +88,7 @@ export default function Chat() {
 
     ws.onopen = () => {
       setWsStatus('connected');
+      reconnectAttemptsRef.current = 0;
       // Keep-alive ping every 25 s
       pingRef.current = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) ws.send('ping');
@@ -99,7 +102,23 @@ export default function Chat() {
 
         if (data.type === 'message') {
           setMessages((prev) => {
-            // Deduplicate by id
+            // Replace optimistic placeholder if content + user match, otherwise dedup by real id
+            const optimisticIdx = prev.findIndex(
+              (m) => m.id.startsWith('opt-') && m.user_id === data.user_id && m.content === data.content
+            );
+            if (optimisticIdx !== -1) {
+              const next = [...prev];
+              next[optimisticIdx] = {
+                id: data.id,
+                space_id: data.space_id,
+                user_id: data.user_id,
+                content: data.content,
+                created_at: data.created_at,
+                user_name: data.user_name,
+                user_photo: data.user_photo,
+              };
+              return next;
+            }
             if (prev.some((m) => m.id === data.id)) return prev;
             return [...prev, {
               id: data.id,
@@ -124,15 +143,25 @@ export default function Chat() {
     ws.onclose = () => {
       setWsStatus('disconnected');
       if (pingRef.current) clearInterval(pingRef.current);
+      if (!shouldReconnectRef.current) return;
+      // Exponential backoff: 1s, 2s, 4s, 8s … max 30s
+      const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 30000);
+      reconnectAttemptsRef.current += 1;
+      setTimeout(connectWs, delay);
     };
 
-    ws.onerror = () => setWsStatus('disconnected');
+    ws.onerror = () => ws.close(); // onclose handles reconnect
+  }, [spaceId, navigate]);
 
+  useEffect(() => {
+    shouldReconnectRef.current = true;
+    connectWs();
     return () => {
-      ws.close();
+      shouldReconnectRef.current = false;
+      wsRef.current?.close();
       if (pingRef.current) clearInterval(pingRef.current);
     };
-  }, [spaceId, navigate]);
+  }, [connectWs]);
 
   // ── Send ──────────────────────────────────────────────────────────────────
   const handleSend = async (e: React.FormEvent) => {
@@ -155,11 +184,10 @@ export default function Chat() {
     setNewMessage('');
 
     try {
-      const saved = await chatApi.sendMessage(spaceId, sent);
-      // Replace optimistic entry with confirmed one
-      setMessages((prev) =>
-        prev.map((m) => (m.id === optimisticId ? { ...saved, space_id: spaceId } : m))
-      );
+      // The server will broadcast the saved message via WebSocket,
+      // which will replace the optimistic entry. We only need to
+      // handle the failure case here.
+      await chatApi.sendMessage(spaceId, sent);
     } catch (err) {
       console.error('Send failed:', err);
       setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
