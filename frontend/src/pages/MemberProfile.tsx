@@ -27,8 +27,9 @@ export default function MemberProfile() {
 
   const [formData, setFormData] = useState({
     name: '',
+    birth_day: '',
+    birth_month: '',
     birth_year: '',
-    birth_date: '',
     birth_location: '',
     generation: '',
     lineage: '',
@@ -58,10 +59,21 @@ export default function MemberProfile() {
       }
       
       // Initialize form
+      // Parse existing birth_date (YYYY-MM-DD) into separate fields
+      let bDay = '', bMonth = '', bYear = data.birth_year?.toString() || '';
+      if (data.birth_date) {
+        const parts = data.birth_date.split('-');
+        if (parts.length === 3) {
+          bYear = parts[0];
+          bMonth = String(parseInt(parts[1]));
+          bDay   = String(parseInt(parts[2]));
+        }
+      }
       setFormData({
         name: data.name,
-        birth_year: data.birth_year?.toString() || '',
-        birth_date: data.birth_date || '',
+        birth_day: bDay,
+        birth_month: bMonth,
+        birth_year: bYear,
         birth_location: data.birth_location || '',
         generation: data.generation || '',
         lineage: data.lineage || '',
@@ -79,10 +91,18 @@ export default function MemberProfile() {
       const spaceId = getCurrentSpace();
       if (!spaceId || !memberId) return;
 
+      // Compose ISO date from three selects if all three are set
+      let composedDate: string | undefined;
+      if (formData.birth_year && formData.birth_month && formData.birth_day) {
+        const mm = formData.birth_month.padStart(2, '0');
+        const dd = formData.birth_day.padStart(2, '0');
+        composedDate = `${formData.birth_year}-${mm}-${dd}`;
+      }
+
       await familyApi.updateMemberProfile(memberId, spaceId, {
         name: formData.name,
         birth_year: formData.birth_year ? parseInt(formData.birth_year) : undefined,
-        birth_date: formData.birth_date || undefined,
+        birth_date: composedDate,
         birth_location: formData.birth_location || undefined,
         generation: formData.generation || undefined,
         lineage: formData.lineage || undefined,
@@ -225,38 +245,59 @@ export default function MemberProfile() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-echon-cream text-sm mb-2">Birthday</label>
-                  <input
-                    type="date"
-                    value={formData.birth_date}
-                    onChange={(e) => {
-                      const d = e.target.value;
-                      setFormData({
-                        ...formData,
-                        birth_date: d,
-                        birth_year: d ? d.split('-')[0] : formData.birth_year,
-                      });
-                    }}
-                    className="echon-input"
-                  />
-                  <p className="text-echon-cream-dark/50 text-xs mt-1">Used for birthday reminders</p>
-                </div>
-
-                <div>
-                  <label className="block text-echon-cream text-sm mb-2">Generation</label>
+              {/* Birthday — three selects, mobile-friendly */}
+              <div>
+                <label className="block text-echon-cream text-sm mb-2">🎂 Birthday</label>
+                <div className="grid grid-cols-3 gap-2">
+                  {/* Day */}
                   <select
-                    value={formData.generation}
-                    onChange={(e) => setFormData({ ...formData, generation: e.target.value })}
-                    className="echon-input"
+                    value={formData.birth_day}
+                    onChange={(e) => setFormData({ ...formData, birth_day: e.target.value })}
+                    className="echon-input text-sm"
                   >
-                    <option value="">Select...</option>
-                    <option value="elder">Elder</option>
-                    <option value="middle">Middle</option>
-                    <option value="younger">Younger</option>
+                    <option value="">Day</option>
+                    {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                      <option key={d} value={String(d)}>{d}</option>
+                    ))}
+                  </select>
+                  {/* Month */}
+                  <select
+                    value={formData.birth_month}
+                    onChange={(e) => setFormData({ ...formData, birth_month: e.target.value })}
+                    className="echon-input text-sm"
+                  >
+                    <option value="">Month</option>
+                    {['January','February','March','April','May','June','July','August','September','October','November','December'].map((m, i) => (
+                      <option key={i} value={String(i + 1)}>{m}</option>
+                    ))}
+                  </select>
+                  {/* Year */}
+                  <select
+                    value={formData.birth_year}
+                    onChange={(e) => setFormData({ ...formData, birth_year: e.target.value })}
+                    className="echon-input text-sm"
+                  >
+                    <option value="">Year</option>
+                    {Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => new Date().getFullYear() - i).map((y) => (
+                      <option key={y} value={String(y)}>{y}</option>
+                    ))}
                   </select>
                 </div>
+                <p className="text-echon-cream-dark/50 text-xs mt-1">Used for birthday reminders in the Now feed</p>
+              </div>
+
+              <div>
+                <label className="block text-echon-cream text-sm mb-2">Generation</label>
+                <select
+                  value={formData.generation}
+                  onChange={(e) => setFormData({ ...formData, generation: e.target.value })}
+                  className="echon-input"
+                >
+                  <option value="">Select...</option>
+                  <option value="elder">Elder</option>
+                  <option value="middle">Middle</option>
+                  <option value="younger">Younger</option>
+                </select>
               </div>
 
               <div>
