@@ -54,12 +54,12 @@ Make the app reliable and contributor-friendly before expanding features.
 History browsing and first native distribution channel.
 
 **Goals:**
-- [ ] Timeline view — memories browsable by decade (1960s, 1970s, ...)
-- [ ] Date-tagging for memories (when did this happen, not just when uploaded)
-- [ ] Reactions (❤️ 🕯️ 🙏) on memories and stories
-- [ ] Comments on memories
-- [ ] Search across memories and stories
-- [ ] Pin important memories to the space home
+- [x] Timeline view — memories browsable by decade (1960s, 1970s, ...) ✅
+- [x] Date-tagging for memories (when did this happen, not just when uploaded) ✅
+- [x] Reactions (❤️ 🕯️ 🙏) on memories and stories ✅
+- [x] Comments on memories ✅
+- [x] Search across memories and stories ✅
+- [x] Pin important memories to the space home ✅
 - [ ] **Google Play Store** via TWA (Trusted Web Activity)
   - Wraps the existing PWA using [Bubblewrap](https://github.com/GoogleChromeLabs/bubblewrap)
   - Requires: `/.well-known/assetlinks.json` on the server + signing keystore

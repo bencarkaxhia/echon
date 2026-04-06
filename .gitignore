@@ -73,3 +73,6 @@ backup/*.dump
 # Playwright test artifacts
 frontend/test-results/
 frontend/playwright-report/
+
+# Local VPS management reference (contains credentials/commands, never commit)
+VPS_MANAGEMENT.md
