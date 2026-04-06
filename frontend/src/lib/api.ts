@@ -94,9 +94,10 @@ export interface Post {
   content?: string;
   media_urls?: string[];
   media_type?: string;
-  event_date?: string;
+  event_date?: string;   // "YYYY-MM-DD" or "YYYY" (year-only)
   location?: string;
   privacy_level: string;
+  is_pinned: boolean;
   created_at: string;
   updated_at: string;
   user?: {
@@ -459,6 +460,54 @@ export const postsApi = {
     await api.delete(`/api/posts/${postId}`, {
       params: { space_id: spaceId },
     });
+  },
+
+  getSpacePostsByDecade: async (spaceId: string, decade: string, page = 1, perPage = 20) => {
+    const response = await api.get(`/api/posts/space/${spaceId}`, {
+      params: { page, per_page: perPage, decade },
+    });
+    return response.data as { posts: Post[]; total: number; page: number; per_page: number; has_more: boolean };
+  },
+
+  getDecades: async (spaceId: string): Promise<{ decades: { decade: string; count: number }[] }> => {
+    const response = await api.get(`/api/posts/space/${spaceId}/decades`);
+    return response.data;
+  },
+
+  getPostComments: async (postId: string): Promise<Comment[]> => {
+    const response = await api.get(`/api/posts/${postId}/comments`);
+    return response.data;
+  },
+
+  toggleReaction: async (postId: string, reactionType: string): Promise<{
+    action: 'added' | 'removed' | 'changed';
+    reaction: Reaction | null;
+  }> => {
+    const response = await api.post('/api/posts/reactions', {
+      post_id: postId,
+      reaction_type: reactionType,
+    });
+    return response.data;
+  },
+
+  togglePin: async (postId: string, spaceId: string): Promise<{ is_pinned: boolean }> => {
+    const response = await api.post(`/api/posts/${postId}/pin`, null, {
+      params: { space_id: spaceId },
+    });
+    return response.data;
+  },
+
+  searchPosts: async (spaceId: string, q: string): Promise<{
+    results: Array<{
+      id: string; type: string; content?: string; author_name: string;
+      author_photo?: string; event_date?: string; created_at: string;
+      media_urls: string[]; location?: string; tags: string[]; is_pinned: boolean;
+    }>;
+    total: number;
+    query: string;
+  }> => {
+    const response = await api.get(`/api/search/posts/${spaceId}`, { params: { q } });
+    return response.data;
   },
 };
 

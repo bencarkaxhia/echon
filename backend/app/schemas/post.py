@@ -6,7 +6,7 @@ PATH: echon/backend/app/schemas/post.py
 """
 
 from pydantic import BaseModel, Field
-from typing import Optional, List, Union
+from typing import Optional, List, Union, Dict
 from datetime import datetime
 from uuid import UUID
 
@@ -19,7 +19,7 @@ class PostCreate(BaseModel):
     content: Optional[str] = None
     media_urls: Optional[List[str]] = None  # List of uploaded file paths
     media_type: Optional[str] = None  # "photo", "video", "audio"
-    event_date: Optional[str] = None  # When the memory happened (ISO string)
+    event_date: Optional[str] = None  # When the memory happened (ISO string or "YYYY")
     location: Optional[str] = None  # Where the memory happened
     privacy_level: str = "space"  # "space", "close_family", "extended_family"
     tags: Optional[List[str]] = None  # ["wedding", "albania", "1995"]
@@ -32,9 +32,9 @@ class CommentCreate(BaseModel):
 
 
 class ReactionCreate(BaseModel):
-    """Add reaction to a post"""
+    """Add or toggle a reaction to a post"""
     post_id: str
-    reaction_type: str  # "heart", "love", "care", "tears", "wow"
+    reaction_type: str  # "heart" | "candle" | "pray"
 
 
 # --- RESPONSE SCHEMAS ---
@@ -44,7 +44,7 @@ class UserBrief(BaseModel):
     id: Union[UUID, str]
     name: str
     profile_photo_url: Optional[str] = None
-    
+
     class Config:
         from_attributes = True
         json_encoders = {UUID: str}
@@ -58,7 +58,7 @@ class CommentResponse(BaseModel):
     content: str
     created_at: datetime
     user: Optional[UserBrief] = None
-    
+
     class Config:
         from_attributes = True
         json_encoders = {UUID: str}
@@ -72,7 +72,7 @@ class ReactionResponse(BaseModel):
     reaction_type: str
     created_at: datetime
     user: Optional[UserBrief] = None
-    
+
     class Config:
         from_attributes = True
         json_encoders = {UUID: str}
@@ -86,22 +86,23 @@ class PostResponse(BaseModel):
     content: Optional[str] = None
     media_urls: Optional[List[str]] = None
     media_type: Optional[str] = None
-    event_date: Optional[str] = None  # ✅ Changed to string
+    event_date: Optional[str] = None   # "YYYY-MM-DD" or "YYYY" (year-only)
     location: Optional[str] = None
     privacy_level: str
+    is_pinned: bool = False
     created_at: datetime
     updated_at: datetime
-    
+
     # Related data
     user: Optional[UserBrief] = None
     comments: Optional[List[CommentResponse]] = []
     reactions: Optional[List[ReactionResponse]] = []
     tags: Optional[List[str]] = []
-    
+
     # Counts
     comment_count: int = 0
     reaction_count: int = 0
-    
+
     class Config:
         from_attributes = True
         json_encoders = {UUID: str}
@@ -114,3 +115,14 @@ class PostListResponse(BaseModel):
     page: int
     per_page: int
     has_more: bool
+
+
+class DecadeCount(BaseModel):
+    """Decade with post count"""
+    decade: str   # "1960s", "2010s"
+    count: int
+
+
+class DecadesResponse(BaseModel):
+    """Available decades in a space"""
+    decades: List[DecadeCount]
