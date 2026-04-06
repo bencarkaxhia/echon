@@ -1,89 +1,110 @@
-# Echon — Family Space
+# Echon — The Private Digital Home for Families
 
-**A private, self-hostable platform for families to share memories, tell stories, and stay present across generations and distance.**
+**A self-hostable platform where families preserve memories, tell stories, and stay connected across generations — privately, and without surveillance.**
 
-No algorithms. No ads. No tracking. Just your family.
+No algorithms. No ads. No data mining. No social media noise.  
+Just your family.
 
 ---
 
-## What is Echon?
+## Why Echon Exists
 
-Echon gives your family a private digital home — a space where you can:
+Modern communication platforms were not built for families — they fragment them.
 
-- **Share memories** — photos, documents, voice recordings
-- **Tell stories** — oral history matters as much as documents
-- **Stay present** — see who's "home" right now, chat in a shared family room
-- **Map relationships** — an interactive family tree with auto-layout for 200+ members
-- **Invite with care** — founder creates a space, members join by invitation code only
+Photos get lost in WhatsApp threads. Stories disappear with the people who lived them. Generations drift apart. And all of it runs on infrastructure owned by companies whose interests are not yours.
 
-It is not a social network. It is a sanctuary.
+Echon exists to solve that.
+
+**A family should have a place that belongs only to them** — a living archive of their identity, their history, and their present — running on infrastructure they control.
+
+---
+
+## The Four Doors
+
+At the heart of Echon is a 3D spatial interface: your **family emblem** surrounded by four symbolic entry points.
+
+| Door | What's inside |
+|------|--------------|
+| 📸 **Memories** | Photos, videos, documents — your family's visual archive |
+| 🎙️ **Stories** | Voice recordings and oral histories — the irreplaceable ones |
+| 👥 **Family** | Interactive tree, member profiles, relationships across generations |
+| 🔔 **Now** | Real-time chat, activity feed, who's home right now |
+
+This structure is designed to be intuitive, emotional, and timeless — working equally well for a tech-savvy founder and an 80-year-old grandparent.
 
 ---
 
 ## Current Status
 
 > **Alpha — working for real families, not yet polished for self-hosters**
+>
+> First family: **The Çarkaxhia Space** 🇦🇱 (live at [echon.app](https://echon.app))
 
-| Area | Status |
-|------|--------|
-| Auth (register, login, JWT, profile photo) | ✅ Working |
-| Family spaces (create, invite, join flow) | ✅ Working |
-| Entrance sequence + door navigation | ✅ Working |
-| Chat (real-time WebSocket) | ✅ Working |
-| Presence ("home now" avatars) | ✅ Working |
-| Memories (photo/doc upload + feed) | ✅ Working |
-| Stories (voice recording + playback) | ✅ Working |
-| Family tree — Card View | ✅ Working |
-| Family tree — Graph View (dagre auto-layout) | ✅ Working |
-| Notifications | ✅ Working |
-| Activity feed | ✅ Working |
-| PWA (installable on Android via Chrome) | ✅ Working |
-| Alembic migrations | ⚠️ Not set up (schema via `create_all`) |
+| Capability | Status |
+|-----------|--------|
+| Auth (register, login, JWT, profile photo) | ✅ |
+| Family spaces — create, invite, join | ✅ |
+| Magic-link invitations (`/join/:token`) | ✅ |
+| Approval workflow (founder approves members) | ✅ |
+| Entrance sequence + door navigation | ✅ |
+| Real-time chat (WebSocket) | ✅ |
+| Presence — "home now" avatars | ✅ |
+| Memories — photo/video/doc upload + timeline | ✅ |
+| Stories — voice recording + playback | ✅ |
+| Family tree — card grid + interactive graph (dagre) | ✅ |
+| Reactions (❤️ 🕯️ 🙏) and comments | ✅ |
+| Activity feed with date grouping | ✅ |
+| Notifications | ✅ |
+| Birthday reminders in Now feed | ✅ |
+| Member profiles with search + pagination | ✅ |
+| Space settings (identity, members, pending approvals) | ✅ |
+| PWA — installable on Android/iOS via browser | ✅ |
+| VPS deployment (Nginx + Docker) | ✅ |
+| Alembic migrations | ⚠️ Not set up (`create_all` used) |
 | Test coverage | ⚠️ 0% — needs work |
-| Elder simplified mode | 🔲 Planned |
 
 ---
 
 ## Tech Stack
 
-**Backend:** Python 3.12 · FastAPI · SQLAlchemy (sync) · PostgreSQL · Redis · JWT
+**Backend:** Python 3.12 · FastAPI · SQLAlchemy (sync) · PostgreSQL · Redis · JWT (python-jose) · argon2
 
 **Frontend:** React 18 · TypeScript · Vite · Tailwind CSS · Framer Motion · ReactFlow · Three.js
 
-**Infrastructure:** Docker (local dev) · Nginx (VPS) · Cloudflare R2 (file storage, optional) · Railway/Render (managed hosting option)
+**Infrastructure:** Docker Compose · Nginx · Cloudflare R2 (file storage, optional — falls back to local) · SendGrid (email, optional)
 
 ---
 
-## Quick Start (Local Development)
+## Quick Start — Local Development
 
 ### Prerequisites
-- Python 3.11+
-- Node.js 18+
-- Docker & Docker Compose
+- Python 3.11+, Node.js 18+, Docker & Docker Compose
 
 ### 1. Clone and configure
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/echon.git
+git clone https://github.com/bencarkaxhia/echon.git
 cd echon
 ```
 
 ```bash
-# Backend env
+# Backend environment
 cp backend/.env.example backend/.env
-# Edit backend/.env — at minimum set a real SECRET_KEY
+# Edit backend/.env — at minimum set a real SECRET_KEY:
+# openssl rand -hex 32
 ```
 
 ```bash
-# Frontend env
+# Frontend environment
 echo "VITE_API_URL=http://localhost:8001" > frontend/.env
 ```
 
-### 2. Start infrastructure
+### 2. Start infrastructure (Postgres + Redis)
 
 ```bash
 docker-compose up -d
-# PostgreSQL on localhost:55432, Redis on localhost:65379
+# PostgreSQL → localhost:55432
+# Redis → localhost:65379
 ```
 
 ### 3. Start backend
@@ -114,88 +135,70 @@ App: http://localhost:5173
 
 Tested on Ubuntu 22.04 with Nginx + Docker.
 
-### 1. Clone on your server
+### 1. Clone and configure
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/echon.git ~/echon
+git clone https://github.com/bencarkaxhia/echon.git ~/echon
 cd ~/echon
-```
-
-### 2. Configure environment
-
-```bash
 cp backend/.env.example backend/.env
-# Set: SECRET_KEY, DATABASE_URL, REDIS_URL, CLOUDFLARE_R2_* (or leave storage as local)
+# Set: SECRET_KEY, DATABASE_URL, REDIS_URL
+# Optional: CLOUDFLARE_R2_* for file storage, SENDGRID_API_KEY for email
 ```
 
-### 3. Start with Docker Compose
+### 2. Build and start
 
 ```bash
-docker-compose -f docker-compose.yml up -d
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-### 4. Nginx config
+### 3. Nginx — WebSocket proxying
 
-Point your domain to the server and configure Nginx:
+WebSocket location blocks **must appear before** the generic `/api/` block:
 
 ```nginx
 server {
     listen 443 ssl;
     server_name yourdomain.com;
+    client_max_body_size 50m;
 
-    # Frontend (built static files or Vite proxy)
     location / {
-        proxy_pass http://127.0.0.1:5173;
+        root /path/to/echon/frontend/dist;
+        try_files $uri $uri/ /index.html;
     }
 
-    # Backend API
+    # WebSocket — presence (before /api/)
+    location /api/presence/ws/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400s;
+    }
+
+    # WebSocket — chat (before /api/)
+    location /api/chat/ws/ {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+        proxy_read_timeout 86400s;
+    }
+
     location /api/ {
-        proxy_pass http://127.0.0.1:8001/api/;
+        proxy_pass http://127.0.0.1:8000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
-    }
-
-    # WebSocket — presence (must be before generic /api/ block)
-    location /api/presence/ws/ {
-        proxy_pass http://127.0.0.1:8001/api/presence/ws/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_read_timeout 86400s;
-        proxy_send_timeout 86400s;
-    }
-
-    # WebSocket — chat
-    location /api/chat/ws/ {
-        proxy_pass http://127.0.0.1:8001/api/chat/ws/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection "upgrade";
-        proxy_set_header Host $host;
-        proxy_read_timeout 86400s;
     }
 }
 ```
 
-**Note:** WebSocket location blocks must appear **before** generic `/api/` blocks in Nginx.
-
-### 5. Set up automated database backups
+### 4. Build frontend for production
 
 ```bash
-# Copy backup script to server
-cp scripts/vps_backup.sh ~/echon/scripts/
-chmod +x ~/echon/scripts/vps_backup.sh
-
-# Add daily cron at 3 AM
-crontab -e
-# Add: 0 3 * * * /bin/bash ~/echon/scripts/vps_backup.sh >> ~/echon/logs/backup.log 2>&1
-```
-
-To pull the latest backup to your local machine:
-```bash
-VPS_HOST=yourdomain.com ./scripts/pull_vps_backup.sh
-# Saves to ./backup/ (gitignored)
+cd frontend
+VITE_API_URL=https://yourdomain.com npm run build
+# Sync dist/ to your server via rsync (not rm+cp — breaks Docker bind mount)
+rsync -av --delete dist/ user@yourserver:/path/to/echon/frontend/dist/
 ```
 
 ---
@@ -206,47 +209,47 @@ VPS_HOST=yourdomain.com ./scripts/pull_vps_backup.sh
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `SECRET_KEY` | **Yes** | JWT signing key — generate with `openssl rand -hex 32` |
+| `SECRET_KEY` | **Yes** | JWT signing key — `openssl rand -hex 32` |
 | `DATABASE_URL` | **Yes** | PostgreSQL connection string |
 | `REDIS_URL` | **Yes** | Redis connection string |
-| `CLOUDFLARE_R2_ACCOUNT_ID` | No | R2 storage (falls back to `/tmp/echon_uploads`) |
-| `CLOUDFLARE_R2_ACCESS_KEY_ID` | No | R2 credentials |
-| `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | No | R2 credentials |
-| `CLOUDFLARE_R2_BUCKET_NAME` | No | R2 bucket name |
-| `SENDGRID_API_KEY` | No | Email invitations |
-| `TWILIO_*` | No | SMS invitations |
+| `CLOUDFLARE_R2_ACCOUNT_ID` | No | R2 storage (falls back to local `/uploads/`) |
+| `CLOUDFLARE_R2_ACCESS_KEY_ID` | No | |
+| `CLOUDFLARE_R2_SECRET_ACCESS_KEY` | No | |
+| `CLOUDFLARE_R2_BUCKET_NAME` | No | |
+| `SENDGRID_API_KEY` | No | Email for invitations and password reset |
 
 ### Frontend (`frontend/.env`)
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_API_URL` | **Yes** | Backend base URL, e.g. `https://api.yourdomain.com` |
+| `VITE_API_URL` | **Yes** | Backend base URL — must be set at **build time** |
+
+> ⚠️ `VITE_API_URL` is baked into the production bundle. Always build with the correct URL.
 
 ---
 
 ## Contributing
 
-Echon is open-source and welcomes contributors. Here's what's most needed:
+Echon is open-source and welcomes contributors. Here's what's most needed right now:
 
 ### Good first issues
-- Replace `alert()` calls with inline UI feedback (there are ~10 across components)
+- Replace `alert()` calls with inline UI feedback (~8 remaining across components)
 - Add loading skeletons to the memory feed and family tree
-- Write backend API tests (currently 0% coverage — target 80%)
-- Add Alembic migration setup (replace `Base.metadata.create_all`)
+- Write backend API tests (currently 0% — target 80%)
+- Set up Alembic migrations (replace `Base.metadata.create_all`)
+- Add image compression before upload (max 2 MB stored)
 
-### Architecture to know before diving in
+### Architecture to understand before diving in
 
-**How the invitation flow works:**
-Founder creates a space → generates invite code → sends link → new user hits `/register?join=1` → enters code → gets added to space
+**Invitation flow:** Founder creates space → generates magic link (`/join/:token`) → invitee registers via that page → auto-approved if founder sent it, pending approval otherwise
 
-**How WebSocket auth works:**
-JWT is passed as `?token=` query param (browsers can't send Authorization headers on WS connections)
+**WebSocket auth:** JWT passed as `?token=` query param (browsers can't set Authorization headers on WS connections)
 
-**How file storage works:**
-`StorageService` in `backend/app/core/storage.py` — if R2 env vars are set, uploads go to Cloudflare R2; otherwise files go to `/tmp/echon_uploads` and are served via `/api/media/`
+**File storage:** `StorageService` in `backend/app/core/storage.py` — R2 if env vars are set, otherwise local `/uploads/` served via `/api/media/`
 
-**How the family tree works:**
-`FamilyTreeGraph.tsx` uses dagre for hierarchical auto-layout. All members are nodes; edges are deduplicated by sorted pair key (one edge per pair, highest specificity relationship type wins). ReactFlow custom nodes **must** have `<Handle>` components or edges won't render.
+**Family tree:** `FamilyTreeGraph.tsx` uses dagre for auto-layout. ReactFlow custom nodes **must** have `<Handle>` components or edges won't render. Edges are deduplicated by sorted pair key.
+
+**Voice stories:** Stored as `Post` records with `type="voice"` and `file_url` pointing to the audio. They appear in the Memories feed with a distinct amber voice-story card UI.
 
 ### Running tests
 
@@ -257,45 +260,39 @@ pytest
 pytest --cov=app --cov-report=term-missing
 ```
 
-### Code style
+### Code conventions
 
-Backend: Python, FastAPI patterns, SQLAlchemy sync sessions, Pydantic v2 schemas  
-Frontend: TypeScript strict, React functional components, Tailwind utility classes, no `alert()` in new code
+- Backend: FastAPI patterns, SQLAlchemy sync sessions, Pydantic v2 schemas
+- Frontend: TypeScript strict, React functional components, Tailwind utility classes
+- No `alert()` in new code — use inline state-driven feedback
+- No hardcoded API URLs — always use `VITE_API_URL`
 
 ---
 
 ## Roadmap
 
-See [ROADMAP.md](ROADMAP.md) for the full milestone plan.
-
-**Short version:**
-- **v0.1** (now) — Core working for one real family, self-hostable with effort
-- **v0.2** — Polish, test coverage, Alembic, media handling improvements
-- **v0.3** — Timeline view, decade browsing, reactions
-- **v0.4** — Elder simplified mode, accessibility pass
-- **v0.5** — Multi-family support, granular privacy controls
-- **v1.0** — Public release, one-click deploy, full docs
+See [ROADMAP.md](ROADMAP.md) for the full phase plan.
 
 ---
 
-## Philosophy
+## Principles
+
+Echon is built on non-negotiable commitments:
+
+- **Privacy-first** — no tracking, no analytics that phone home, no third-party scripts
+- **Family-owned data** — runs on infrastructure you control
+- **Open source** — transparent, forkable, community-driven
+- **Human-first design** — built for grandparents and children, not power users
+- **Long-term thinking** — built for decades, not engagement metrics
+
+---
 
 > *"First stone. Let's build something that matters."*
-
-Echon exists because family memory is fragile, scattered across WhatsApp threads and hard drives that will eventually fail. It belongs together, in one place, owned by the family.
-
-The project is committed to:
-- **No tracking** — zero analytics, no third-party scripts that phone home
-- **Data ownership** — your data stays on infrastructure you control
-- **Free forever** — open-source, self-hostable, no subscription required
-- **Human-first** — designed for grandparents and children, not power users
+>
+> Built with love. The first family: **The Çarkaxhia Space** 🇦🇱
 
 ---
 
 ## License
 
-MIT License — see [LICENSE](LICENSE)
-
----
-
-**Built with love. The first family: The Çarkaxhia Space. 🇦🇱**
+MIT — see [LICENSE](LICENSE)

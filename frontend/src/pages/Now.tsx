@@ -8,9 +8,10 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { activityApi, ActivityItem, SpaceStats } from '../lib/api';
+import { activityApi, familyApi, ActivityItem, SpaceStats, UpcomingBirthday } from '../lib/api';
 import { getCurrentSpace } from '../lib/auth';
 import ActivityCard from '../components/ActivityCard';
+import { getMediaUrl } from '../lib/api';
 
 function getDateLabel(dateStr: string): string {
   const date = new Date(dateStr);
@@ -42,6 +43,7 @@ export default function Now() {
   const navigate = useNavigate();
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [stats, setStats] = useState<SpaceStats | null>(null);
+  const [birthdays, setBirthdays] = useState<UpcomingBirthday[]>([]);
   const [loading, setLoading] = useState(true);
   const [quickUpdate, setQuickUpdate] = useState('');
   const [posting, setPosting] = useState(false);
@@ -60,16 +62,17 @@ export default function Now() {
         return;
       }
 
-      // Load activity feed and stats in parallel
-      const [activityData, statsData] = await Promise.all([
+      const [activityData, statsData, birthdayData] = await Promise.all([
         activityApi.getActivityFeed(spaceId, 1, 50),
         activityApi.getSpaceStats(spaceId),
+        familyApi.getUpcomingBirthdays(spaceId, 30),
       ]);
 
       setActivities(activityData.activities);
       setHasMore(activityData.has_more);
       setPage(1);
       setStats(statsData);
+      setBirthdays(birthdayData.birthdays);
     } catch (error) {
       console.error('Failed to load activity:', error);
     } finally {
@@ -172,6 +175,56 @@ export default function Now() {
                 <p className="text-3xl font-bold text-echon-candle">{stats.recent_activity_count}</p>
                 <p className="text-sm text-echon-cream-dark">Last 7 Days</p>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* Upcoming Birthdays */}
+        {birthdays.length > 0 && (
+          <div className="echon-card mb-8 border-echon-gold/30">
+            <h2 className="text-lg font-serif text-echon-cream mb-4 flex items-center gap-2">
+              🎂 <span>Upcoming Birthdays</span>
+            </h2>
+            <div className="space-y-3">
+              {birthdays.map((b) => (
+                <motion.div
+                  key={b.user_id}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  onClick={() => navigate(`/space/family/${b.user_id}`)}
+                  className="flex items-center gap-3 cursor-pointer group"
+                >
+                  {/* Avatar */}
+                  <div className="w-10 h-10 rounded-full border-2 border-echon-gold bg-echon-shadow flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {b.profile_photo_url ? (
+                      <img src={getMediaUrl(b.profile_photo_url)} alt={b.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-echon-gold font-semibold">{b.name.charAt(0)}</span>
+                    )}
+                  </div>
+                  {/* Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-echon-cream font-semibold group-hover:text-echon-gold transition-colors truncate">{b.name}</p>
+                    <p className="text-echon-cream-dark text-xs">
+                      {b.is_today
+                        ? `🎉 Today! Turning ${b.age}`
+                        : b.days_until === 1
+                        ? `Tomorrow — turning ${b.age}`
+                        : `In ${b.days_until} days — turning ${b.age}`}
+                    </p>
+                  </div>
+                  {/* Badge */}
+                  {b.is_today ? (
+                    <span className="text-xs px-2 py-1 bg-echon-gold text-echon-black rounded-full font-bold flex-shrink-0">
+                      Today! 🎂
+                    </span>
+                  ) : (
+                    <span className="text-xs text-echon-cream-dark flex-shrink-0">
+                      {new Date(b.birth_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                    </span>
+                  )}
+                </motion.div>
+              ))}
             </div>
           </div>
         )}

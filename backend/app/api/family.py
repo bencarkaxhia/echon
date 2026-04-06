@@ -8,6 +8,8 @@ PATH: echon/backend/app/api/family.py
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from datetime import date, timedelta
+from typing import List
 
 from ..core.database import get_db
 from ..models import User, FamilySpace, SpaceMember, Post, Comment
@@ -80,6 +82,7 @@ def get_space_members(
             email=user.email,
             phone=user.phone,
             birth_year=user.birth_year,
+            birth_date=user.birth_date,
             birth_location=user.birth_location,
             profile_photo_url=user.profile_photo_url,
             role=membership.role,
@@ -237,6 +240,8 @@ def update_member_profile(
         user.name = updates.name
     if updates.birth_year:
         user.birth_year = updates.birth_year
+    if updates.birth_date is not None:
+        user.birth_date = updates.birth_date
     if updates.birth_location:
         user.birth_location = updates.birth_location
     
@@ -280,3 +285,64 @@ def update_member_profile(
         post_count=post_count,
         comment_count=comment_count
     )
+
+# --- UPCOMING BIRTHDAYS ---
+
+@router.get("/upcoming-birthdays/{space_id}")
+def get_upcoming_birthdays(
+    space_id: str,
+    days_ahead: int = 30,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Return members whose birthday falls within the next `days_ahead` days.
+    Compares only month+day (year-agnostic).
+    """
+    if not check_space_membership(db, current_user.id, space_id):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="You are not a member of this space")
+
+    memberships = db.query(SpaceMember).filter(
+        SpaceMember.space_id == space_id,
+        SpaceMember.is_active == True,
+    ).all()
+
+    today = date.today()
+    results = []
+
+    for m in memberships:
+        user = db.query(User).filter(User.id == m.user_id).first()
+        if not user or not user.birth_date:
+            continue
+
+        bd = user.birth_date
+        try:
+            bday_this_year = bd.replace(year=today.year)
+        except ValueError:
+            bday_this_year = date(today.year, 3, 1)
+
+        if bday_this_year < today:
+            try:
+                bday_this_year = bd.replace(year=today.year + 1)
+            except ValueError:
+                bday_this_year = date(today.year + 1, 3, 1)
+
+        days_until = (bday_this_year - today).days
+
+        if 0 <= days_until <= days_ahead:
+            age = today.year - bd.year if days_until == 0 else (
+                today.year + 1 - bd.year if bday_this_year.year > today.year else today.year - bd.year
+            )
+            results.append({
+                "user_id": str(user.id),
+                "name": user.name,
+                "profile_photo_url": user.profile_photo_url,
+                "birth_date": bd.isoformat(),
+                "days_until": days_until,
+                "is_today": days_until == 0,
+                "age": age,
+            })
+
+    results.sort(key=lambda x: x["days_until"])
+    return {"birthdays": results, "total": len(results)}

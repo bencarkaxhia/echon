@@ -28,6 +28,7 @@ export default function MemberProfile() {
   const [formData, setFormData] = useState({
     name: '',
     birth_year: '',
+    birth_date: '',
     birth_location: '',
     generation: '',
     lineage: '',
@@ -60,6 +61,7 @@ export default function MemberProfile() {
       setFormData({
         name: data.name,
         birth_year: data.birth_year?.toString() || '',
+        birth_date: data.birth_date || '',
         birth_location: data.birth_location || '',
         generation: data.generation || '',
         lineage: data.lineage || '',
@@ -80,6 +82,7 @@ export default function MemberProfile() {
       await familyApi.updateMemberProfile(memberId, spaceId, {
         name: formData.name,
         birth_year: formData.birth_year ? parseInt(formData.birth_year) : undefined,
+        birth_date: formData.birth_date || undefined,
         birth_location: formData.birth_location || undefined,
         generation: formData.generation || undefined,
         lineage: formData.lineage || undefined,
@@ -224,14 +227,21 @@ export default function MemberProfile() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-echon-cream text-sm mb-2">Birth Year</label>
+                  <label className="block text-echon-cream text-sm mb-2">Birthday</label>
                   <input
-                    type="number"
-                    value={formData.birth_year}
-                    onChange={(e) => setFormData({ ...formData, birth_year: e.target.value })}
+                    type="date"
+                    value={formData.birth_date}
+                    onChange={(e) => {
+                      const d = e.target.value;
+                      setFormData({
+                        ...formData,
+                        birth_date: d,
+                        birth_year: d ? d.split('-')[0] : formData.birth_year,
+                      });
+                    }}
                     className="echon-input"
-                    placeholder="1985"
                   />
+                  <p className="text-echon-cream-dark/50 text-xs mt-1">Used for birthday reminders</p>
                 </div>
 
                 <div>
@@ -321,10 +331,14 @@ export default function MemberProfile() {
 
               {/* Details */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {member.birth_year && (
+                {(member.birth_date || member.birth_year) && (
                   <div className="echon-card bg-echon-shadow">
-                    <p className="text-echon-cream-dark text-sm mb-1">Birth Year</p>
-                    <p className="text-echon-cream text-lg">{member.birth_year}</p>
+                    <p className="text-echon-cream-dark text-sm mb-1">🎂 Birthday</p>
+                    <p className="text-echon-cream text-lg">
+                      {member.birth_date
+                        ? new Date(member.birth_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+                        : member.birth_year}
+                    </p>
                   </div>
                 )}
 

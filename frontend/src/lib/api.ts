@@ -144,6 +144,7 @@ export interface MemberProfile {
   email?: string;
   phone?: string;
   birth_year?: number;
+  birth_date?: string;   // ISO date "YYYY-MM-DD" — used for birthday reminders
   birth_location?: string;
   profile_photo_url?: string;
   role: string;
@@ -153,6 +154,16 @@ export interface MemberProfile {
   joined_at: string;
   post_count: number;
   comment_count: number;
+}
+
+export interface UpcomingBirthday {
+  user_id: string;
+  name: string;
+  profile_photo_url?: string;
+  birth_date: string;
+  days_until: number;
+  is_today: boolean;
+  age: number;
 }
 
 export interface MemberListResponse {
@@ -532,6 +543,7 @@ export const familyApi = {
     updates: {
       name?: string;
       birth_year?: number;
+      birth_date?: string;
       birth_location?: string;
       generation?: string;
       lineage?: string;
@@ -540,6 +552,13 @@ export const familyApi = {
   ): Promise<MemberProfile> => {
     const response = await api.patch(`/api/family/${memberId}`, updates, {
       params: { space_id: spaceId },
+    });
+    return response.data;
+  },
+
+  getUpcomingBirthdays: async (spaceId: string, daysAhead: number = 30): Promise<{ birthdays: UpcomingBirthday[]; total: number }> => {
+    const response = await api.get(`/api/family/upcoming-birthdays/${spaceId}`, {
+      params: { days_ahead: daysAhead },
     });
     return response.data;
   },
