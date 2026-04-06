@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { storiesApi, Story } from '../lib/api';
+import { storiesApi, Story, familyApi } from '../lib/api';
 import { getCurrentSpace, getCurrentUser } from '../lib/auth';
 import StoryCard from '../components/StoryCard';
 import VoiceRecorder from '../components/VoiceRecorder';
@@ -20,6 +20,7 @@ export default function Stories() {
   const [showRecorder, setShowRecorder] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
+  const [isFounder, setIsFounder] = useState(false);
   const currentUser = getCurrentUser();
 
   useEffect(() => {
@@ -34,8 +35,16 @@ export default function Stories() {
         return;
       }
 
-      const data = await storiesApi.getSpaceStories(spaceId, pageNum, 20);
-      
+      const [data, members] = await Promise.all([
+        storiesApi.getSpaceStories(spaceId, pageNum, 20),
+        pageNum === 1 ? familyApi.getSpaceMembers(spaceId) : Promise.resolve(null),
+      ]);
+
+      if (pageNum === 1 && members) {
+        const me = members.members.find((m: any) => m.id === currentUser?.id);
+        setIsFounder(me?.role === 'founder');
+      }
+
       if (pageNum === 1) {
         setStories(data.stories);
       } else {
@@ -131,7 +140,7 @@ export default function Stories() {
                 key={story.id}
                 story={story}
                 onDelete={handleDelete}
-                canDelete={currentUser?.id === story.author_id}
+                canDelete={currentUser?.id === story.author_id || isFounder}
               />
             ))}
 

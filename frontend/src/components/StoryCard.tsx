@@ -5,7 +5,8 @@
  * PATH: echon/frontend/src/components/StoryCard.tsx
  */
 
-import { motion } from 'framer-motion';
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Story } from '../lib/api';
 import { getMediaUrl } from '../lib/api';
 
@@ -16,7 +17,7 @@ interface StoryCardProps {
 }
 
 export default function StoryCard({ story, onDelete, canDelete }: StoryCardProps) {
-  // Removed unused showDetails state
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return null;
@@ -57,16 +58,43 @@ export default function StoryCard({ story, onDelete, canDelete }: StoryCardProps
           )}
         </div>
         {canDelete && onDelete && (
-          <button
-            onClick={() => {
-              if (confirm('Delete this story?')) {
-                onDelete(story.id);
-              }
-            }}
-            className="text-echon-cream-dark hover:text-echon-candle transition-colors"
-          >
-            🗑️
-          </button>
+          <AnimatePresence mode="wait">
+            {confirmingDelete ? (
+              <motion.div
+                key="confirm"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="flex items-center gap-2"
+              >
+                <span className="text-xs text-echon-cream-dark">Delete?</span>
+                <button
+                  onClick={() => { onDelete(story.id); setConfirmingDelete(false); }}
+                  className="text-xs px-2 py-1 bg-red-900/60 border border-red-700 text-red-300 rounded hover:bg-red-800 transition-colors"
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => setConfirmingDelete(false)}
+                  className="text-xs px-2 py-1 bg-echon-shadow border border-echon-wood text-echon-cream-dark rounded hover:border-echon-gold transition-colors"
+                >
+                  No
+                </button>
+              </motion.div>
+            ) : (
+              <motion.button
+                key="trash"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setConfirmingDelete(true)}
+                className="text-echon-cream-dark hover:text-echon-candle transition-colors p-1"
+                title="Delete story"
+              >
+                🗑️
+              </motion.button>
+            )}
+          </AnimatePresence>
         )}
       </div>
 
