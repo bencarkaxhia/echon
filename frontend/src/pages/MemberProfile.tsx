@@ -378,17 +378,51 @@ export default function MemberProfile() {
                 })}
               </div>
 
-              {/* Change Password Button (own profile only) */}
-              {canEdit && (
-                <div className="text-center pt-4 border-t border-echon-wood">
-                  <button
-                    onClick={() => setShowChangePassword(true)}
-                    className="text-echon-cream-dark hover:text-echon-cream text-sm transition-colors"
-                  >
-                    🔐 Change Password
-                  </button>
-                </div>
-              )}
+              {/* Action Buttons */}
+              <div className="pt-4 border-t border-echon-wood">
+                {currentUser?.id !== member.id ? (
+                  /* Viewing someone else's profile */
+                  <div className="grid grid-cols-3 gap-3">
+                    <button
+                      onClick={() => navigate('/space/chat')}
+                      className="flex flex-col items-center gap-1.5 py-3 px-2 bg-echon-shadow border border-echon-wood rounded-xl hover:border-echon-gold transition-colors group"
+                    >
+                      <span className="text-2xl">💬</span>
+                      <span className="text-xs text-echon-cream-dark group-hover:text-echon-cream transition-colors text-center leading-tight">
+                        Family Chat
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/space/memories')}
+                      className="flex flex-col items-center gap-1.5 py-3 px-2 bg-echon-shadow border border-echon-wood rounded-xl hover:border-echon-gold transition-colors group"
+                    >
+                      <span className="text-2xl">📸</span>
+                      <span className="text-xs text-echon-cream-dark group-hover:text-echon-cream transition-colors text-center leading-tight">
+                        Memories
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => navigate('/space/family/tree')}
+                      className="flex flex-col items-center gap-1.5 py-3 px-2 bg-echon-shadow border border-echon-wood rounded-xl hover:border-echon-gold transition-colors group"
+                    >
+                      <span className="text-2xl">🌳</span>
+                      <span className="text-xs text-echon-cream-dark group-hover:text-echon-cream transition-colors text-center leading-tight">
+                        Family Tree
+                      </span>
+                    </button>
+                  </div>
+                ) : (
+                  /* Own profile — show account settings */
+                  <div className="flex flex-col gap-2">
+                    <button
+                      onClick={() => setShowChangePassword(true)}
+                      className="w-full py-2 text-echon-cream-dark hover:text-echon-cream text-sm transition-colors border border-echon-wood rounded-lg hover:border-echon-gold"
+                    >
+                      🔐 Change Password
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           )}
         </motion.div>

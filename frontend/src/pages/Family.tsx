@@ -5,7 +5,7 @@
  * PATH: echon/frontend/src/pages/Family.tsx
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { familyApi, MemberProfile, invitationsApi } from '../lib/api';
@@ -13,6 +13,8 @@ import { getCurrentSpace, getCurrentUser } from '../lib/auth';
 import MemberCard from '../components/MemberCard';
 import InviteMember from '../components/InviteMember';
 import PendingApprovals from '../components/PendingApprovals';
+
+const PAGE_SIZE = 12;
 
 export default function Family() {
   const navigate = useNavigate();
@@ -22,8 +24,10 @@ export default function Family() {
   const [showInvite, setShowInvite] = useState(false);
   const [showPending, setShowPending] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
   const currentUser = getCurrentUser();
-  
+
   // Check if current user is a founder
   const isFounder = members.find(m => m.id === currentUser?.id)?.role === 'founder';
 
@@ -68,6 +72,26 @@ export default function Family() {
     }
   };
 
+  const filteredMembers = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q) return members;
+    return members.filter(
+      (m) =>
+        m.name.toLowerCase().includes(q) ||
+        (m.birth_location || '').toLowerCase().includes(q) ||
+        (m.relationship_to_founder || '').toLowerCase().includes(q),
+    );
+  }, [members, search]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredMembers.length / PAGE_SIZE));
+  const pagedMembers = filteredMembers.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  // Reset to page 1 when search changes
+  const handleSearch = (value: string) => {
+    setSearch(value);
+    setPage(1);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-echon-black flex items-center justify-center">
@@ -104,6 +128,19 @@ export default function Family() {
               + Invite
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Search Bar */}
+      <div className="bg-echon-shadow/30 border-b border-echon-wood">
+        <div className="max-w-7xl mx-auto px-4 py-3">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => handleSearch(e.target.value)}
+            placeholder="Search by name, location, relationship…"
+            className="echon-input w-full max-w-md"
+          />
         </div>
       </div>
 
@@ -159,17 +196,74 @@ export default function Family() {
             <p className="text-echon-cream-dark mb-8">
               Invite family members to join this space
             </p>
-            <button className="echon-btn">
+            <button className="echon-btn" onClick={() => setShowInvite(true)}>
               Invite Family Members
             </button>
           </motion.div>
+        ) : filteredMembers.length === 0 ? (
+          /* No Search Results */
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-20"
+          >
+            <div className="text-6xl mb-4">🔍</div>
+            <p className="text-echon-cream-dark">No members match "{search}"</p>
+            <button onClick={() => handleSearch('')} className="mt-4 text-echon-gold underline text-sm">
+              Clear search
+            </button>
+          </motion.div>
         ) : (
-          /* Member Grid */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {members.map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))}
-          </div>
+          <>
+            {/* Member Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {pagedMembers.map((member) => (
+                <MemberCard key={member.id} member={member} />
+              ))}
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-3 mt-10">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="echon-btn-secondary px-4 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  ← Prev
+                </button>
+                <div className="flex gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                    <button
+                      key={p}
+                      onClick={() => setPage(p)}
+                      className={`w-9 h-9 rounded-lg text-sm font-semibold transition-colors ${
+                        p === page
+                          ? 'bg-echon-gold text-echon-black'
+                          : 'bg-echon-shadow text-echon-cream hover:border-echon-gold border border-echon-wood'
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="echon-btn-secondary px-4 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+
+            {/* Result count */}
+            <p className="text-center text-echon-cream-dark text-xs mt-4">
+              {search
+                ? `${filteredMembers.length} of ${members.length} members`
+                : `${members.length} members · page ${page} of ${totalPages}`}
+            </p>
+          </>
         )}
       </div>
 
