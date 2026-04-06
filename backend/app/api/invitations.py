@@ -474,6 +474,26 @@ def get_my_spaces(
     }
 
 
+@router.get("/my-pending")
+def get_my_pending(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Return the pending (not yet approved) membership for the current user, if any."""
+    membership = db.query(SpaceMember).filter(
+        SpaceMember.user_id == current_user.id,
+        SpaceMember.is_active == False,
+    ).first()
+    if not membership:
+        return {"pending": False}
+    space = db.query(FamilySpace).filter(FamilySpace.id == membership.space_id).first()
+    return {
+        "pending": True,
+        "space_id": str(membership.space_id),
+        "space_name": space.name if space else "the family",
+    }
+
+
 # --- REGISTER AND JOIN IN ONE STEP ---
 
 @router.post("/register-and-join", response_model=None, status_code=status.HTTP_201_CREATED)
@@ -516,12 +536,19 @@ def register_and_join(data: RegisterAndJoinRequest, db: Session = Depends(get_db
     # Use the invitee's confirmed/corrected relationship if provided, else fall back to inviter's choice
     final_relationship = data.relationship_override or invitation.relationship_to_inviter
 
-    # Create pending membership
+    # Auto-approve if the inviter is a founder of the space
+    inviter_membership = db.query(SpaceMember).filter(
+        SpaceMember.space_id == invitation.space_id,
+        SpaceMember.user_id == invitation.invited_by,
+        SpaceMember.is_active == True,
+    ).first()
+    auto_approve = inviter_membership is not None and inviter_membership.role == "founder"
+
     new_membership = SpaceMember(
         space_id=invitation.space_id,
         user_id=new_user.id,
         role="member",
-        is_active=False,  # Pending approval
+        is_active=auto_approve,  # Approved immediately if invited by founder
         relationship_to_founder=final_relationship,
     )
     db.add(new_membership)
@@ -533,32 +560,58 @@ def register_and_join(data: RegisterAndJoinRequest, db: Session = Depends(get_db
     db.commit()
     db.refresh(new_user)
 
-    # Notify space members (non-critical)
-    try:
-        notify_space_members(
-            db=db,
-            space_id=str(invitation.space_id),
-            exclude_user_id=str(new_user.id),
-            notification_type="member_joined",
-            title=f"{new_user.name} wants to join the family!",
-            message="A new member is waiting for approval",
-            link_url="/space/settings",
-            actor_id=str(new_user.id),
-            actor_name=new_user.name,
-            actor_photo=new_user.profile_photo_url,
-        )
-    except Exception:
-        pass
-
     space = db.query(FamilySpace).filter(FamilySpace.id == invitation.space_id).first()
     access_token = create_access_token(data={"sub": str(new_user.id)})
 
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": UserResponse.model_validate(new_user),
-        "space_id": str(invitation.space_id),
-        "space_name": space.name if space else "",
-        "status": "pending_approval",
-        "message": f"Your request to join {space.name if space else 'the family'} is pending approval",
-    }
+    if auto_approve:
+        # Notify space members of new approved member
+        try:
+            notify_space_members(
+                db=db,
+                space_id=str(invitation.space_id),
+                exclude_user_id=str(new_user.id),
+                notification_type="member_joined",
+                title=f"{new_user.name} joined the family!",
+                message=f"{new_user.name} has joined {space.name if space else 'the family space'}",
+                link_url="/space/family",
+                actor_id=str(new_user.id),
+                actor_name=new_user.name,
+                actor_photo=new_user.profile_photo_url,
+            )
+        except Exception:
+            pass
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": UserResponse.model_validate(new_user),
+            "space_id": str(invitation.space_id),
+            "space_name": space.name if space else "",
+            "status": "approved",
+            "message": f"Welcome to {space.name if space else 'the family'}!",
+        }
+    else:
+        # Pending approval — notify founders
+        try:
+            notify_space_members(
+                db=db,
+                space_id=str(invitation.space_id),
+                exclude_user_id=str(new_user.id),
+                notification_type="member_joined",
+                title=f"{new_user.name} wants to join the family!",
+                message="A new member is waiting for approval",
+                link_url="/space/settings",
+                actor_id=str(new_user.id),
+                actor_name=new_user.name,
+                actor_photo=new_user.profile_photo_url,
+            )
+        except Exception:
+            pass
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "user": UserResponse.model_validate(new_user),
+            "space_id": str(invitation.space_id),
+            "space_name": space.name if space else "",
+            "status": "pending_approval",
+            "message": f"Your request to join {space.name if space else 'the family'} is pending approval",
+        }

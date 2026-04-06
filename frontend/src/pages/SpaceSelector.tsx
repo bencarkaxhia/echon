@@ -10,6 +10,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { invitationsApi } from '../lib/api';
 import { setCurrentSpace, logout } from '../lib/auth';
+import { api } from '../lib/api';
 
 interface UserSpace {
   space_id: string;
@@ -26,6 +27,7 @@ export default function SpaceSelector() {
   const [showJoin, setShowJoin] = useState(false);
   const [invitationCode, setInvitationCode] = useState('');
   const [joining, setJoining] = useState(false);
+  const [pendingSpaceName, setPendingSpaceName] = useState<string | null>(null);
 
   useEffect(() => {
     loadSpaces();
@@ -40,12 +42,21 @@ export default function SpaceSelector() {
       if (data.spaces.length === 1) {
         handleSelectSpace(data.spaces[0].space_id);
       } else if (data.spaces.length === 0) {
-        // No approved spaces - might have pending
-        // Show info message
-        const hasPendingCheck = localStorage.getItem('echon_pending_join');
-        if (hasPendingCheck) {
-          alert('⏳ Your request to join a family space is still pending approval.\n\nPlease wait for the space admin to approve your request. You can also create your own space or join a different one with another code.');
-          localStorage.removeItem('echon_pending_join');
+        // Check if user has a pending membership via API
+        try {
+          const pending = await api.get('/api/invitations/my-pending');
+          if (pending.data?.space_name) {
+            setPendingSpaceName(pending.data.space_name);
+            localStorage.removeItem('echon_pending_join');
+          } else if (localStorage.getItem('echon_pending_join')) {
+            setPendingSpaceName('the family space');
+            localStorage.removeItem('echon_pending_join');
+          }
+        } catch {
+          if (localStorage.getItem('echon_pending_join')) {
+            setPendingSpaceName('the family space');
+            localStorage.removeItem('echon_pending_join');
+          }
         }
       }
     } catch (error) {
@@ -94,6 +105,37 @@ You'll now be logged out. Please login again later to check if you've been appro
     return (
       <div className="min-h-screen bg-echon-black flex items-center justify-center">
         <div className="text-echon-cream text-xl">Loading your spaces...</div>
+      </div>
+    );
+  }
+
+  // Pending approval screen — shown instead of Create/Join when user has a pending request
+  if (pendingSpaceName) {
+    return (
+      <div className="min-h-screen bg-echon-black flex items-center justify-center px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="echon-card max-w-md w-full text-center space-y-6"
+        >
+          <div className="text-6xl">🕯️</div>
+          <h2 className="text-2xl font-serif text-echon-cream">Almost there…</h2>
+          <p className="text-echon-cream-dark">
+            Your registration for <span className="text-echon-gold font-semibold">{pendingSpaceName}</span> was received.
+            A family founder needs to approve your membership before you can enter.
+          </p>
+          <p className="text-echon-cream-dark text-sm">
+            You'll be able to sign in and enter once approved. Check back later.
+          </p>
+          <div className="flex flex-col gap-3 pt-2">
+            <button onClick={() => { setPendingSpaceName(null); loadSpaces(); }} className="echon-btn-secondary">
+              Refresh — check if approved
+            </button>
+            <button onClick={() => logout()} className="text-echon-cream-dark text-sm underline">
+              Sign out
+            </button>
+          </div>
+        </motion.div>
       </div>
     );
   }

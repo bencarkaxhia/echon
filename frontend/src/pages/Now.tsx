@@ -133,7 +133,7 @@ export default function Now() {
             ← Back to Space
           </button>
           <h1 className="text-2xl font-serif text-echon-cream">
-            💬 Now
+            🔔 Now
           </h1>
           <button
             onClick={() => navigate('/space/chat')}

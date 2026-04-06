@@ -54,8 +54,8 @@ const doors: Door[] = [
   {
     id: 'now',
     title: 'Now',
-    emoji: '💬',
-    description: 'Recent activity and conversations',
+    emoji: '🔔',
+    description: 'Recent activity and what\'s happening',
     route: '/space/now',
     position: 'bottom-[21%] right-[15%] md:right-[15%]',
   },

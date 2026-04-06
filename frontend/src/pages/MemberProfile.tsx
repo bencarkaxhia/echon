@@ -188,11 +188,13 @@ export default function MemberProfile() {
                 </span>
               )}
               {canEdit && (
-                <div className="absolute inset-0 bg-black/50 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer"
+                <div
+                  className="absolute inset-0 flex items-end justify-center pb-1 cursor-pointer"
                   onClick={() => fileInputRef.current?.click()}
                 >
-                  <span className="text-white text-sm">
-                    {uploading ? 'Uploading...' : 'Change Photo'}
+                  {/* Camera badge — always visible at bottom, works on mobile tap */}
+                  <span className="bg-black/70 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1 select-none">
+                    {uploading ? '…' : '📷'}
                   </span>
                 </div>
               )}

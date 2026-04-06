@@ -13,7 +13,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { invitationsApi } from '../lib/api';
-import { setAuthToken, setCurrentUser } from '../lib/auth';
+import { setAuthToken, setCurrentUser, setCurrentSpace } from '../lib/auth';
 import { groupedRelationshipTypes, relationshipLabel } from '../lib/relationshipTypes';
 import PasswordInput from '../components/PasswordInput';
 
@@ -93,6 +93,14 @@ export default function JoinSpace() {
       setAuthToken(result.access_token);
       setCurrentUser(result.user);
       setSpaceName(result.space_name);
+      if (result.status === 'approved') {
+        // Founder invited — go straight in
+        setCurrentSpace(result.space_id);
+        navigate('/space');
+        return;
+      }
+      // Pending approval — show waiting screen
+      localStorage.setItem('echon_pending_join', 'true');
       setJoined(true);
     } catch (err: any) {
       setFieldError(err.response?.data?.detail || 'Something went wrong. Please try again.');
