@@ -110,21 +110,36 @@ export default function ActivityCard({ activity }: ActivityCardProps) {
             </p>
           )}
 
-          {/* Preview Image/Audio */}
+          {/* Preview Image / Voice Story */}
           {activity.preview_url && (
             <div className="mt-2">
               {activity.type === 'memory' ? (
                 <img
                   src={getMediaUrl(activity.preview_url)}
                   alt="Preview"
-                  className="w-full h-32 object-cover rounded"
+                  className="w-full h-32 object-cover rounded-lg border border-echon-wood"
                 />
               ) : activity.type === 'story' ? (
-                <audio
-                  src={getMediaUrl(activity.preview_url)}
-                  controls
-                  className="w-full h-10"
-                />
+                <div className="rounded-xl overflow-hidden border border-amber-800/40"
+                  style={{ background: 'linear-gradient(135deg, #451a03 0%, #78350f 50%, #451a03 100%)' }}>
+                  <div className="px-3 py-3">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-lg">🎙️</span>
+                      <p className="text-xs text-amber-300/70 uppercase tracking-widest font-semibold">Voice Story</p>
+                    </div>
+                    {activity.preview_text && (
+                      <p className="text-amber-100/80 text-xs font-serif mb-2 line-clamp-1">{activity.preview_text}</p>
+                    )}
+                    <audio
+                      src={getMediaUrl(activity.preview_url)}
+                      controls
+                      controlsList="nodownload"
+                      className="w-full h-8"
+                      style={{ colorScheme: 'dark' }}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </div>
+                </div>
               ) : null}
             </div>
           )}

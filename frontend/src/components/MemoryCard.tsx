@@ -234,8 +234,46 @@ export default function MemoryCard({
         )}
       </div>
 
-      {/* Media */}
-      {post.media_urls && post.media_urls.length > 0 && (
+      {/* Voice Story Banner */}
+      {post.media_type === 'voice' && post.media_urls && post.media_urls.length > 0 && (
+        <div className="mb-4 rounded-xl overflow-hidden border border-amber-800/40"
+          style={{ background: 'linear-gradient(135deg, #451a03 0%, #78350f 40%, #92400e 70%, #451a03 100%)' }}>
+          {/* Texture overlay */}
+          <div className="absolute inset-0 opacity-10 pointer-events-none rounded-xl"
+            style={{ backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 3px, rgba(255,255,255,0.05) 3px, rgba(255,255,255,0.05) 6px)' }}
+          />
+          <div className="px-4 py-4 relative">
+            {/* Label row */}
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-2xl">🎙️</span>
+              <div>
+                <p className="text-xs text-amber-300/70 uppercase tracking-widest font-semibold">Voice Story</p>
+                {post.content && (
+                  <p className="text-amber-100 text-sm font-serif leading-snug">{post.content}</p>
+                )}
+              </div>
+            </div>
+            {/* Waveform decoration */}
+            <div className="flex items-center gap-px mb-3 opacity-40">
+              {[3,6,4,8,5,10,7,5,9,6,4,8,5,7,4,6,9,5,7,4,8,5,6,4,7,5,9,6,4,8].map((h, i) => (
+                <div key={i} className="bg-amber-300 rounded-full w-0.5 flex-shrink-0"
+                  style={{ height: `${h * 2}px` }} />
+              ))}
+            </div>
+            {/* Native audio player */}
+            <audio
+              src={getMediaUrl(post.media_urls[0])}
+              controls
+              controlsList="nodownload"
+              className="w-full h-8"
+              style={{ colorScheme: 'dark' }}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Photo / Video / PDF Media */}
+      {post.media_type !== 'voice' && post.media_urls && post.media_urls.length > 0 && (
         <div className={`grid gap-2 mb-4 ${
           post.media_urls.length === 1 ? 'grid-cols-1' :
           post.media_urls.length === 2 ? 'grid-cols-2' :
@@ -272,8 +310,8 @@ export default function MemoryCard({
         </div>
       )}
 
-      {/* Content */}
-      {post.content && (
+      {/* Content (skip for voice — title already shown inside the banner) */}
+      {post.content && post.media_type !== 'voice' && (
         <p className="text-echon-cream mb-4 whitespace-pre-wrap leading-relaxed">{post.content}</p>
       )}
 
