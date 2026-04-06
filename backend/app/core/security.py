@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from argon2 import PasswordHasher
-from argon2.exceptions import VerifyMismatchError
+from argon2.exceptions import VerifyMismatchError, InvalidHashError
 from .config import settings
 
 
@@ -29,7 +29,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
     try:
         ph.verify(hashed_password, plain_password)
         return True
-    except VerifyMismatchError:
+    except (VerifyMismatchError, InvalidHashError):
         return False
 
 
