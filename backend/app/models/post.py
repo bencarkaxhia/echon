@@ -58,6 +58,9 @@ class Post(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     is_active = Column(Boolean, default=True)
     
+    # Pinned to top of space
+    is_pinned = Column(Boolean, default=False)
+
     # Engagement
     reaction_count = Column(Integer, default=0)
     comment_count = Column(Integer, default=0)
